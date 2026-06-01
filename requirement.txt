@@ -1,0 +1,12 @@
+jupyter
+notebook
+ipykernel
+numpy
+scipy
+scikit-image
+matplotlib
+tqdm
+pillow
+imageio
+pydicom
+opencv-python-headless

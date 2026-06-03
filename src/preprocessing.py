@@ -566,6 +566,36 @@ def apply_background_mask(
     return masked_image
 
 
+def convert_dicom_to_uint8_png(
+    image_path: str | Path,
+    output_path: str | Path,
+    use_windowing: bool = False,
+) -> Path:
+    image = load_dicom_pixels(image_path, normalize=not use_windowing)
+    if use_windowing:
+        image = apply_windowing(image)
+
+    image_uint8 = np.clip(np.rint(image * 255.0), 0, 255).astype(np.uint8)
+    destination = Path(output_path).expanduser()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(image_uint8, mode="L").save(destination)
+
+    return destination
+
+
+def get_dicom_png_output_path(
+    image_path: str | Path,
+    dataset_root: str | Path,
+    output_root: str | Path,
+) -> Path:
+    source_path = Path(image_path).expanduser()
+    source_root = Path(dataset_root).expanduser().resolve()
+    destination_root = Path(output_root).expanduser()
+
+    relative_path = source_path.resolve().relative_to(source_root)
+    return destination_root / relative_path.with_suffix(".png")
+
+
 def get_pectoral_mask_path(
     image_path: str | Path,
     masks_dir: str | Path = DEFAULT_PECTORAL_MASKS_DIR,

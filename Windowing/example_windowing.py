@@ -49,12 +49,12 @@ def visualize_windowing_comparison(image, methods_results):
             window_width=width,
             voi_func='LINEAR',
             y_min=0,
-            y_max=255,
+            y_max=image.max(),
             backend='np_v2'
         )
         
         # Display
-        axes[idx].imshow(windowed, cmap='gray', vmin=0, vmax=255)
+        axes[idx].imshow(windowed, cmap='gray', vmin=0, vmax=windowed.max())
         axes[idx].set_title(f'{method}\nC:{center} W:{width}', fontsize=10)
         axes[idx].axis('off')
     
@@ -75,10 +75,11 @@ def example_single_image():
     print("=" * 70)
     
     # Load a sample DICOM
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/INbreast/AllDICOMs")
+    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
     sample_dcm = list(inbreast_dir.glob("*.dcm"))[0]
     
     print(f"\nLoading: {sample_dcm.name}")
+    
     dcm = pydicom.dcmread(sample_dcm)
     image = dcm.pixel_array
     
@@ -123,7 +124,7 @@ def example_dataset_analysis():
     print("=" * 70)
     
     # Get DICOM files
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/INbreast/AllDICOMs")
+    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
     dicom_files = list(inbreast_dir.glob("*.dcm"))
     
     print(f"\nFound {len(dicom_files)} DICOM files")
@@ -153,7 +154,7 @@ def example_method_comparison():
     print("=" * 70)
     
     # Get DICOM files
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/INbreast/AllDICOMs")
+    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
     dicom_files = list(inbreast_dir.glob("*.dcm"))[:30]  # Sample 30 for speed
     
     print(f"\nComparing methods on {len(dicom_files)} images...")
@@ -194,7 +195,7 @@ def example_apply_windowing():
     print("=" * 70)
     
     # Load image
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/INbreast/AllDICOMs")
+    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
     sample_dcm = list(inbreast_dir.glob("*.dcm"))[0]
     
     dcm = pydicom.dcmread(sample_dcm)
@@ -218,7 +219,7 @@ def example_apply_windowing():
         window_width=width,
         voi_func='LINEAR',
         y_min=0,
-        y_max=255,
+        y_max=image.max(),
         backend='np_v2'
     )
     
@@ -234,7 +235,7 @@ def example_apply_windowing():
     axes[0].axis('off')
     
     # Windowed
-    axes[1].imshow(windowed, cmap='gray', vmin=0, vmax=255)
+    axes[1].imshow(windowed, cmap='gray', vmin=0, vmax=windowed.max())
     axes[1].set_title(f'Windowed Image\nCenter:{center} Width:{width}', fontsize=12)
     axes[1].axis('off')
     
@@ -269,7 +270,7 @@ def main():
     print("=" * 70)
     
     # Check if dataset exists
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/INbreast/AllDICOMs")
+    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
     if not inbreast_dir.exists():
         print(f"\nError: InBreast dataset not found at {inbreast_dir}")
         print("Please update the path in the script.")

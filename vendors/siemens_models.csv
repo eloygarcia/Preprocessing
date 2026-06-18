@@ -1,0 +1,7 @@
+model,period,detector_type,pixel_size_um,bit_depth,matrix_size,tomosynthesis,contrast_enhanced,key_features,datasets_present,notes
+MammoNovation,2008-2015,amorphous selenium (a-Se),70,14,3328x4084; 2560x3328,No,No,First-generation FFDM,InBreast,Most detailed technical specifications available
+Mammomat Novation DR,2008-2015,DR,,,,,No,No,Digital Radiography version of Novation,NYU,Transition model to full DR
+Mammomat Inspiration,2012-2020,DR,,,2290x1890 (various),Yes (DBT),No,"Widely adopted DBT system, most popular in research","NYU, MBTST, CMMD, M-BIG",Golden era model - highest dataset presence
+MAMMOMAT (generic),Various,Various,,,,,,,DMID,Generic reference - specific model not documented
+MAMMOMAT Revelation,2018-present,aSe (24x30cm),,,"",Yes (50° Wide-Angle),Yes (TiCEM),"50° tomosynthesis, PRIME Technology, TomoFlow, Insight 2D/3D",None documented,"Premium current system, ~6 min exams"
+MAMMOMAT B.brilliant,2024-2026,Next-gen fast readout,,,"",Yes (50° Wide-Angle in 5s),Yes (ClearCEM),"PlatinumTomo, Flying Focal Spot, PREMIA AI reconstruction, ComfortPackage",None yet,"Latest generation, Red Dot Award 2025, Frost & Sullivan 2025"

@@ -1,0 +1,23 @@
+{
+  "total_files_processed": 410,
+  "total_errors": 0,
+  "vendor_filter": null,
+  "models": {
+    "Unknown Model": {
+      "file_count": 410,
+      "sample_file": "50993399_5d85ecc9cf26b254_MG_L_ML_ANON.dcm",
+      "bits_stored": [
+        "16"
+      ],
+      "rows": [
+        "3328",
+        "4084"
+      ],
+      "columns": [
+        "2560",
+        "3328"
+      ],
+      "photometric_interpretation": "MONOCHROME2"
+    }
+  }
+}

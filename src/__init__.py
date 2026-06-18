@@ -98,13 +98,20 @@ except ModuleNotFoundError:
     pass
 
 try:
-    from .visualization import DEFAULT_INBREAST_IMAGES_DIR, load_dicom_image, list_dicom_images, show_dicom_image
+    from .visualization import (
+        DEFAULT_INBREAST_IMAGES_DIR,
+        load_dicom_image,
+        list_dicom_images,
+        show_dicom_image,
+        show_dataset_segmentation_overlays_batch,
+    )
 
     __all__ += [
         "DEFAULT_INBREAST_IMAGES_DIR",
         "list_dicom_images",
         "load_dicom_image",
         "show_dicom_image",
+        "show_dataset_segmentation_overlays_batch",
     ]
 except ModuleNotFoundError:
     pass

@@ -1,0 +1,11 @@
+machine_id,vendor,model,vendor_confidence,image_count
+49,Hologic,Selenia Dimensions,high,23529
+48,Hologic,Selenia Dimensions,high,8699
+29,Unknown,Unknown,low,8267
+21,GE,Senographe Essential/DS,probable,8221
+93,GE,Senographe DS,probable,1915
+216,GE,Senographe DS,probable,1908
+210,Fujifilm,AMULET Innovality,high,1070
+170,Hologic,Selenia,high,923
+190,GE,Senographe DS,probable,145
+197,GE,Unknown GE model,probable,29

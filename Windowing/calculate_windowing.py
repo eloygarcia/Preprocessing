@@ -53,11 +53,14 @@ def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
     width = _first_numeric(getattr(dcm, 'WindowWidth', None))
 
     if center is None or width is None or width <= 0:
-        return None
+        image = dcm.pixel_array
+        width = image.max()
+        center = image.max() // 2
+        # return None
 
     intercept = _first_numeric(getattr(dcm, 'RescaleIntercept', None))
     slope = _first_numeric(getattr(dcm, 'RescaleSlope', None))
-    voi_func = getattr(dcm, 'VOILUTFunction', 'LINEAR')
+    voi_func = getattr(dcm, 'VOILUTFunction', 'SIGMOID')
 
     return {
         'window_center': int(round(center)),
@@ -271,7 +274,7 @@ def calculate_windowing(image: np.ndarray,
         # Calculate width from FWHM
         left_value = bins[left_idx]
         right_value = bins[right_idx]
-        width = (right_value - left_value) * 2  # Expand beyond FWHM
+        width = (right_value - left_value) * 1.75 # Expand beyond FWHM
         
         # Ensure reasonable width
         if width < 100:
@@ -369,12 +372,12 @@ def analyze_dataset_windowing(image_paths: List[Path],
     for i, filepath in enumerate(image_paths):
         try:
             # Try to read as DICOM
-            if str(filepath).endswith('.dcm'):
-                dcm = pydicom.dcmread(filepath, stop_before_pixels=False)
-                image = dcm.pixel_array
-            else:
-                # Try as numpy array
-                image = np.load(filepath)
+            # if str(filepath).endswith('.dcm') or :
+            dcm = pydicom.dcmread(filepath, stop_before_pixels=False)
+            image = dcm.pixel_array
+            #else:
+            #     # Try as numpy array
+            #    image = np.load(filepath)
             
             center, width = calculate_windowing(image, method, exclude_background)
             centers.append(center)

@@ -145,7 +145,7 @@ def apply_windowing(arr,
         windowing_func = _apply_windowing_torch
     else:
         raise ValueError(
-            f'Invalid backend {backend}, must be one of ["np", "np_v2", "torch"]'
+            f'Invalid backend {backend}, must be one of ["np_v1", "np_v2", "torch"]'
         )
 
     arr = windowing_func(arr,

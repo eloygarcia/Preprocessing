@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Example: Calculate and Apply Windowing to InBreast Dataset
+Example: Calculate and Apply Windowing
 
 This script demonstrates how to:
 1. Calculate optimal windowing parameters from DICOM files
@@ -10,12 +10,17 @@ This script demonstrates how to:
 Usage:
     python example_windowing.py
 """
-
-import numpy as np
+import os
+import random
 import pydicom
+import argparse
+import numpy as np
+
 from pathlib import Path
 import matplotlib.pyplot as plt
+
 from calculate_windowing import (
+    get_dicom_voi_lut_params,
     calculate_windowing,
     analyze_dataset_windowing,
     compare_methods_on_dataset,
@@ -24,10 +29,64 @@ from calculate_windowing import (
     get_mammography_preset,
     calculate_all_methods
 )
+
 from windowing import apply_windowing
 
 
-def visualize_windowing_comparison(image, methods_results):
+def build_argument_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Encuentra archivos DICOM en un dataset y exporta PNGs de 8 bits manteniendo la estructura relativa.",
+    )
+    parser.add_argument(
+        "dataset_root",
+        type=Path,
+        help="Directorio raiz del dataset DICOM de entrada.",
+    )    
+    parser.add_argument(
+        "output_root",
+        type=Path,
+        help="Directorio raiz de salida donde se replicara la estructura del dataset en PNG.",
+    )
+    parser.add_argument(
+        "--num-sample",
+        type=int,
+        default=20,
+        help="Number of samples to analyze"
+    )
+    parser.add_argument(
+        "--include-extensionless",
+        action="store_true",
+        help="Busca tambien archivos DICOM sin extension.",
+    )
+    parser.add_argument(
+        "--extensionless-only",
+        action="store_true",
+        help="Busca solo archivos DICOM sin extension.",
+    )
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default='np_v1',
+        help="Windowing backend. Default np_v2. Options: np_v1, np_v2, torch (require pytorch)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=1234,
+        help="Seed for random selection and reproducibility",
+    )
+    
+    """
+    parser.add_argument(
+        "--use-windowing",
+        action="store_true",
+        help="Aplica windowing antes de convertir a 8 bits en lugar de una normalizacion min-max.",
+    )
+    """
+    return parser
+
+
+def visualize_windowing_comparison(image, voilut, methods_results):
     """
     Create a comparison visualization of different windowing methods.
     """
@@ -47,10 +106,14 @@ def visualize_windowing_comparison(image, methods_results):
             image.copy(),
             window_center=center,
             window_width=width,
-            voi_func='LINEAR',
-            y_min=0,
+            voi_func=voilut['voi_lut_function'],
+            # voi_func='LINEAR',
+            # voi_func='LINEAR_EXACT',
+            # voi_func='SIGMOID',
+            y_min=image.min(),
             y_max=image.max(),
-            backend='np_v2'
+            #backend=args.backend
+            backend="np_v2",
         )
         
         # Display
@@ -66,21 +129,38 @@ def visualize_windowing_comparison(image, methods_results):
     return fig
 
 
-def example_single_image():
+def example_single_image(args):
     """
     Example: Calculate windowing for a single image.
     """
+    dataset_dir = Path(args.dataset_root) # if hasattr(args, '_get_args') else Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
+    output_dir = Path(args.output_root) # if hasattr(args, '_get_args') else Path("output_pngs")
+
     print("\n" + "=" * 70)
     print("EXAMPLE 1: Single Image Windowing")
     print("=" * 70)
+
     
     # Load a sample DICOM
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
-    sample_dcm = list(inbreast_dir.glob("*.dcm"))[0]
+    list_dcm = list()
     
+    if args.include_extensionless or args.extensionless_only:
+        list_dcm = list(dataset_dir.glob('*'))
+    else:
+        list_dcm = list(dataset_dir.glob("*.dcm"))
+    
+
+    random.seed(args.seed)
+    if len(list_dcm)>0:
+        sample_dcm = list_dcm[random.randint(0, len(list_dcm)-1)]
+    else:return 0
+    
+    ##
     print(f"\nLoading: {sample_dcm.name}")
     
     dcm = pydicom.dcmread(sample_dcm)
+    voilut = get_dicom_voi_lut_params(dcm)
+    print(voilut['voi_lut_function'])
     image = dcm.pixel_array
     
     print(f"Image shape: {image.shape}")
@@ -99,8 +179,10 @@ def example_single_image():
     
     # Visualize comparison
     print("\nGenerating comparison visualization...")
-    fig = visualize_windowing_comparison(image, results)
-    output_path = Path("windowing_comparison.png")
+
+    fig = visualize_windowing_comparison(image, voilut, results)
+    output_path = output_dir / "windowing_comparison.png"
+
     fig.savefig(output_path, dpi=150, bbox_inches='tight')
     print(f"✓ Saved to: {output_path}")
     plt.close()
@@ -108,6 +190,7 @@ def example_single_image():
     # Recommend best method
     recommended_method = get_mammography_preset('breast_optimized')
     center, width = calculate_windowing(image, method=recommended_method)
+
     print(f"\n✓ RECOMMENDED for mammography: {recommended_method}")
     print(f"  Window Center: {center}")
     print(f"  Window Width: {width}")
@@ -115,52 +198,71 @@ def example_single_image():
     return center, width
 
 
-def example_dataset_analysis():
+def example_dataset_analysis(args):
     """
     Example: Analyze windowing parameters across entire dataset.
     """
+    dataset_dir = args.dataset_root # if hasattr(args, '_get_args') else Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
+    output_dir = args.output_root # if hasattr(args, '_get_args') else Path("output_pngs")
+
     print("\n" + "=" * 70)
     print("EXAMPLE 2: Dataset-wide Windowing Analysis")
     print("=" * 70)
     
-    # Get DICOM files
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
-    dicom_files = list(inbreast_dir.glob("*.dcm"))
+     # Load a sample DICOM
+    dicom_files = list()
     
+    if args.include_extensionless or args.extensionless_only:
+        dicom_files = list(dataset_dir.glob('*'))
+    else:
+        dicom_files = list(dataset_dir.glob("*.dcm"))
+    
+
+    ## 
     print(f"\nFound {len(dicom_files)} DICOM files")
-    print(f"Sampling 50 images for analysis...")
+    print(f"Sampling {args.num_sample} images for analysis...")
     
     # Analyze with recommended method
     method = get_mammography_preset('breast_optimized')
-    stats = analyze_dataset_windowing(dicom_files[:50], method=method)
+    
+    random.seed(args.seed)
+    indexes = np.array(random.sample(range(0, len(dicom_files)-1),args.num_sample), dtype='int')
+
+    #stats = analyze_dataset_windowing(dicom_files[indexes.astype(int)], method=method)
+    stats = analyze_dataset_windowing([dicom_files[x.astype(int)] for x in indexes], method=method)
     
     # Print report
-    print_windowing_report(stats, "InBreast Dataset - Windowing Analysis")
+    print_windowing_report(stats, "Windowing Analysis")
     
     # Save to file
-    output_path = Path("../../vendors/Siemens/inbreast_windowing_statistics.json")
+    output_path = Path(output_dir, "windowing_statistics.json")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     save_windowing_report(stats, output_path)
     
     return stats
 
 
-def example_method_comparison():
+def example_method_comparison(args):
     """
     Example: Compare all methods on the dataset.
     """
+    dataset_dir = args.dataset_root # if hasattr(args, '_get_args') else Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
+    output_dir = args.output_root # if hasattr(args, '_get_args') else Path("output_pngs")
+
     print("\n" + "=" * 70)
     print("EXAMPLE 3: Method Comparison on Dataset")
     print("=" * 70)
     
     # Get DICOM files
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
-    dicom_files = list(inbreast_dir.glob("*.dcm"))[:30]  # Sample 30 for speed
+    dicom_files = list(dataset_dir.glob("*.dcm"))  # Sample 30 for speed
+
+    random.seed(args.seed)
+    indexes = np.array(random.sample(range(0, len(dicom_files)-1),args.num_sample), dtype='int')
     
-    print(f"\nComparing methods on {len(dicom_files)} images...")
+    print(f"\nComparing methods on {args.num_sample} images...")
     
     # Compare all methods
-    results = compare_methods_on_dataset(dicom_files, num_samples=30)
+    results = compare_methods_on_dataset([dicom_files[x.astype(int)] for x in indexes], num_samples=args.num_sample)
     
     # Print summary
     print("\n" + "=" * 70)
@@ -177,7 +279,7 @@ def example_method_comparison():
             print(f"{method:<25} {center:<15} {width:<15} {std}")
     
     # Save comparison
-    output_path = Path("../../vendors/Siemens/inbreast_method_comparison.json")
+    output_path = Path(output_dir, "method_comparison.json")
     import json
     with open(output_path, 'w') as f:
         json.dump(results, f, indent=2)
@@ -186,29 +288,46 @@ def example_method_comparison():
     return results
 
 
-def example_apply_windowing():
+def example_apply_windowing(args):
     """
     Example: Apply calculated windowing to an image.
     """
+    # Check if dataset exists
+    dataset_dir = args.dataset_root # if hasattr(args, '_get_args') else Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
+    output_dir = args.output_root # if hasattr(args, '_get_args') else Path("output_pngs")
+
     print("\n" + "=" * 70)
     print("EXAMPLE 4: Apply Windowing Transformation")
     print("=" * 70)
     
     # Load image
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
-    sample_dcm = list(inbreast_dir.glob("*.dcm"))[0]
+    if args.include_extensionless or args.extensionless_only:
+        sample_dcm = list(dataset_dir.glob("*"))[0]
+    else:
+        sample_dcm = list(dataset_dir.glob("*.dcm"))[0]
     
-    dcm = pydicom.dcmread(sample_dcm)
+    dcm = []
+    try:
+        dcm = pydicom.dcmread(sample_dcm)
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+
+    voilut = get_dicom_voi_lut_params(dcm)
     image = dcm.pixel_array
-    
+
     print(f"Original image: {image.shape}, dtype: {image.dtype}")
     print(f"Value range: {image.min()} - {image.max()}")
     
     # Calculate windowing
     method = get_mammography_preset('breast_optimized')
     center, width = calculate_windowing(image, method=method)
+    #center = voilut['window_center']
+    #width = voilut['window_center']
     
     print(f"\nCalculated windowing:")
+
     print(f"  Center: {center}")
     print(f"  Width: {width}")
     
@@ -217,10 +336,13 @@ def example_apply_windowing():
         image.copy(),
         window_center=center,
         window_width=width,
-        voi_func='LINEAR',
-        y_min=0,
+        voi_func=voilut['voi_lut_function'],
+        # voi_func='LINEAR',
+        # voi_func='LINEAR_EXACT',
+        # voi_func='SIGMOID',
+        y_min=image.min(),
         y_max=image.max(),
-        backend='np_v2'
+        backend=args.backend 
     )
     
     print(f"\nWindowed image: {windowed.shape}, dtype: {windowed.dtype}")
@@ -252,7 +374,8 @@ def example_apply_windowing():
     axes[2].grid(True, alpha=0.3)
     
     plt.tight_layout()
-    output_path = Path("windowing_before_after.png")
+    output_path = Path(output_dir, "windowing_before_after.png")
+
     fig.savefig(output_path, dpi=150, bbox_inches='tight')
     print(f"\n✓ Visualization saved to: {output_path}")
     plt.close()
@@ -264,43 +387,52 @@ def main():
     """
     Run all examples.
     """
+
+    parser = build_argument_parser()
+    args = parser.parse_args()
+
     print("\n" + "=" * 70)
     print("MAMMOGRAPHY WINDOWING EXAMPLES")
     print("InBreast Dataset Analysis")
     print("=" * 70)
     
     # Check if dataset exists
-    inbreast_dir = Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
-    if not inbreast_dir.exists():
-        print(f"\nError: InBreast dataset not found at {inbreast_dir}")
-        print("Please update the path in the script.")
+    dataset_dir = args.dataset_root # if hasattr(args, '_get_args') else Path("/home/eloygarcia/Escritorio/Datasets/inbreast/ALL-IMGS")
+    output_dir = args.output_root # if hasattr(args, '_get_args') else Path("output_pngs")
+
+    print(f"\nDataset root: {dataset_dir}")
+    print(f"\nOutput root: {output_dir}")
+
+    if not dataset_dir.exists():
+        print(f"\nError: Dataset not found at {dataset_dir}")
         return
     
     try:
         # Example 1: Single image
         print("\n🔍 Running Example 1: Single Image Analysis...")
-        example_single_image()
+        example_single_image(args)
         
         # Example 2: Dataset analysis
-        print("\n🔍 Running Example 2: Dataset-wide Analysis...")
-        example_dataset_analysis()
+        #print("\n🔍 Running Example 2: Dataset-wide Analysis...")
+        #example_dataset_analysis(args)
         
         # Example 3: Method comparison
-        print("\n🔍 Running Example 3: Method Comparison...")
-        example_method_comparison()
+        print("\n🔍 Running Example 2: Method Comparison...")
+        example_method_comparison(args)
         
         # Example 4: Apply windowing
-        print("\n🔍 Running Example 4: Apply Windowing...")
-        example_apply_windowing()
+        print("\n🔍 Running Example 3: Apply Windowing...")
+        example_apply_windowing(args)
         
         print("\n" + "=" * 70)
         print("✓ ALL EXAMPLES COMPLETED SUCCESSFULLY")
         print("=" * 70)
+        
         print("\nGenerated files:")
-        print("  - windowing_comparison.png")
-        print("  - windowing_before_after.png")
-        print("  - ../../vendors/Siemens/inbreast_windowing_statistics.json")
-        print("  - ../../vendors/Siemens/inbreast_method_comparison.json")
+        print(output_dir / "windowing_comparison.png")
+        print(output_dir / "windowing_before_after.png")
+        print(output_dir / "windowing_statistics.json")
+        print(output_dir / "method_comparison.json")
         
     except Exception as e:
         print(f"\n❌ Error: {e}")

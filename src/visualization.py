@@ -8,7 +8,7 @@ from PIL import Image
 import pydicom
 
 
-DEFAULT_INBREAST_IMAGES_DIR = Path("~/Escritorio/Datasets/InBreast/Images").expanduser()
+DEFAULT_INBREAST_IMAGES_DIR = Path("~/Escritorio/Datasets/inbreast/ALL-IMGS").expanduser()
 DEFAULT_RASTER_EXTENSIONS = (".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp")
 
 

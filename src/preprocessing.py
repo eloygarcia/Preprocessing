@@ -494,33 +494,6 @@ def load_dicom_pixels(image_path: str | Path, normalize: bool = False) -> np.nda
     return image
 
 
-def apply_windowing(
-    image: np.ndarray,
-    window_center: float | None = None,
-    window_width: float | None = None,
-    lower_percentile: float = 1.0,
-    upper_percentile: float = 99.0,
-) -> np.ndarray:
-    image_array = np.asarray(image, dtype=np.float32)
-
-    if image_array.ndim != 2:
-        raise ValueError("apply_windowing expects a 2D image")
-
-    if window_center is None or window_width is None:
-        low_value, high_value = np.percentile(image_array, [lower_percentile, upper_percentile])
-        window_center = float((low_value + high_value) / 2.0)
-        window_width = float(high_value - low_value)
-
-    if window_width <= 0:
-        raise ValueError("window_width must be greater than 0")
-
-    lower_bound = window_center - window_width / 2.0
-    upper_bound = window_center + window_width / 2.0
-    windowed = np.clip(image_array, lower_bound, upper_bound)
-
-    return _normalize_to_unit_interval(windowed)
-
-
 def segment_breast_region(
     image: np.ndarray,
     threshold: float = 0.0,
@@ -573,7 +546,7 @@ def convert_dicom_to_uint8_png(
 ) -> Path:
     image = load_dicom_pixels(image_path, normalize=not use_windowing)
     if use_windowing:
-        image = apply_windowing(image)
+        image = apply_windowing(image) ## Check before continue
 
     image_uint8 = np.clip(np.rint(image * 255.0), 0, 255).astype(np.uint8)
     destination = Path(output_path).expanduser()

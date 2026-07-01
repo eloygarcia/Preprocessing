@@ -160,6 +160,52 @@ Opciones utiles:
 - `--extensionless-only`: procesa solo DICOM sin extension.
 - `--workers auto`: paraleliza la conversion.
 
+### 6) Revisar en batch imagen + segmentacion solapada (terminal)
+
+```bash
+python -m src.visualization /ruta/imagenes /ruta/mascaras \
+  --batch-size 8 \
+  --columns 4 \
+  --alpha 0.35
+```
+
+Por defecto, para cada imagen busca una mascara en `/ruta/mascaras` con nombre `<stem>.png`.
+
+Opciones utiles:
+
+- `--mask-suffix _mask`: usa `<stem>_mask.png`.
+- `--mask-extension .tif`: cambia extension de mascara.
+- `--mask-threshold 0`: umbral para binarizar mascara.
+- `--start-index 100`: comienza en un indice concreto.
+- `--max-images 64`: limita la revision a N imagenes.
+- `--non-recursive`: no recorre subcarpetas.
+
+Tambien puedes usar un CSV para mapear rutas exactas imagen-mascara:
+
+```csv
+image_path,mask_path
+/ruta/imagenes/case_001.dcm,/ruta/mascaras/case_001.png
+/ruta/imagenes/case_002.dcm,/ruta/mascaras/case_002.png
+```
+
+```bash
+python -m src.visualization --pairs-csv /ruta/pairs.csv
+```
+
+Opciones de CSV:
+
+- `--csv-image-column image_path`
+- `--csv-mask-column mask_path`
+- `--csv-delimiter ';'`
+- Si usas la misma columna para imagen y mascara (por ejemplo `file_name`),
+  la mascara se busca con la extension definida en `--mask-extension` (por defecto `.png`).
+
+Si en el CSV usas rutas relativas, puedes pasar carpetas base:
+
+```bash
+python -m src.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pairs.csv
+```
+
 ## Notebooks
 
 - `notebooks/00_inbreast_visualization.ipynb`: exploracion visual de INBreast.

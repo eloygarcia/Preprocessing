@@ -1,3 +1,4 @@
+"""
 from .csaws import (
     DEFAULT_CSAWS_DATASET_DIR,
     DEFAULT_CSAWS_SUMMARY_EXPORT_PATH,
@@ -43,11 +44,12 @@ __all__ = [
     "collect_raster_image_summary_record",
     "export_image_summary_dataset",
 ]
+"""
 
 try:
     from .preprocessing import (
         apply_background_mask,
-        apply_windowing,
+        #apply_windowing,
         collect_dicom_metadata_record,
         collect_dicom_tag_record,
         convert_dicom_to_uint8_png,
@@ -70,7 +72,7 @@ try:
         segment_breast_region,
     )
 
-    __all__ += [
+    __all__ = [
         "DEFAULT_DICOM_TAG_EXPORT_PATH",
         "DEFAULT_METADATA_DATASET_PATH",
         "DEFAULT_PECTORAL_MASKS_DIR",
@@ -83,7 +85,7 @@ try:
         "export_metadata_dataset",
         "get_dicom_png_output_path",
         "load_dicom_pixels",
-        "apply_windowing",
+        #"apply_windowing",
         "segment_breast_region",
         "apply_background_mask",
         "get_pectoral_mask_path",
@@ -104,6 +106,7 @@ try:
         list_dicom_images,
         show_dicom_image,
         show_dataset_segmentation_overlays_batch,
+        show_dicom_with_bbox,
     )
 
     __all__ += [
@@ -112,6 +115,7 @@ try:
         "load_dicom_image",
         "show_dicom_image",
         "show_dataset_segmentation_overlays_batch",
+        "show_dicom_with_bbox",
     ]
 except ModuleNotFoundError:
     pass

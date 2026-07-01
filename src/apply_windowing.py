@@ -12,9 +12,11 @@ def _apply_windowing_np_v1(arr,
                            y_max=255):
     assert window_width > 0
     y_range = y_max - y_min
+    
     # float64 needed (default) or just float32 ?
     # arr = arr.astype(np.float64)
     arr = arr.astype(np.float32)
+
     #
     if voi_func in ['LINEAR', 'LINEAR_EXACT']:
         # PS3.3 C.11.2.1.2.1 and C.11.2.1.3.2
@@ -128,6 +130,7 @@ def apply_windowing(arr,
                     y_min=0,
                     y_max=255,
                     backend='np_v2'):
+    
     if backend == 'torch':
         if isinstance(arr, torch.Tensor):
             pass
@@ -143,7 +146,7 @@ def apply_windowing(arr,
         windowing_func = _apply_windowing_np_v2
     elif backend == 'torch':
         windowing_func = _apply_windowing_torch
-    else:
+    #else:
         raise ValueError(
             f'Invalid backend {backend}, must be one of ["np_v1", "np_v2", "torch"]'
         )

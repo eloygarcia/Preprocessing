@@ -1,11 +1,20 @@
+
+import ast
+import csv
+import random
+import sys
+
 from pathlib import Path
 import argparse
 import csv
 
-import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
 import pydicom
+from PIL import Image
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 
 
 DEFAULT_INBREAST_IMAGES_DIR = Path("~/Escritorio/Datasets/inbreast/ALL-IMGS").expanduser()
@@ -367,6 +376,43 @@ def show_dataset_segmentation_overlays_batch(
         "missing_masks": len(missing_pairs),
         "batches_shown": total_batches,
     }
+
+
+def show_dicom_with_bbox(image, record, ax=None):
+    """Display a DICOM image with its breast bounding box.
+
+    Parameters
+    ----------
+    image: np.ndarray
+        DICOM image array (2D).
+    record : dict
+        Row from INBreast_breast_region.csv with 'file_name' and 'bboxes'.
+    ax : matplotlib.axes.Axes, optional
+        Axes to draw on. If None, a new figure is created.
+    """
+    # bboxes format: [x1, y1, x2, y2]
+    x1, y1, x2, y2 = ast.literal_eval(record['bboxes'])
+    score = float(record['scores'])
+
+    # Load DICOM pixels (normalized)
+    pixels = image
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(6, 8))
+
+    ax.imshow(pixels, cmap='gray', aspect='equal')
+
+    rect = mpatches.Rectangle(
+        (x1, y1), x2 - x1, y2 - y1,
+        linewidth=2, edgecolor='lime', facecolor='none',
+        label=f'breast (score={score:.3f})'
+    )
+    ax.add_patch(rect)
+    ax.legend(loc='upper right', fontsize=8)
+    ax.set_title(record['file_name'], fontsize=8)
+    ax.axis('off')
+    return ax
+
 
 
 def _parse_args() -> argparse.Namespace:

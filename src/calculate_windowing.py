@@ -57,8 +57,6 @@ def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
                                             'breast_tissue',
                                             exclude_background= True)
     
-
-
     intercept = _first_numeric(getattr(dcm, 'RescaleIntercept', None))
     slope = _first_numeric(getattr(dcm, 'RescaleSlope', None))
     voi_func = getattr(dcm, 'VOILUTFunction', 'LINEAR')
@@ -75,6 +73,8 @@ def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
 def should_invert_monochrome1(dicom_dataset) -> bool:
     """Return True when DICOM photometric interpretation is MONOCHROME1."""
     photometric = str(getattr(dicom_dataset, 'PhotometricInterpretation', '')).upper()
+    # (0008,0068) PresentationIntentType:  FOR PRESENTATION
+    # (2050,0020) PresentationLUTShape:  IDENTITY
     return photometric == 'MONOCHROME1'
 
 

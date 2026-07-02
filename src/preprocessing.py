@@ -32,7 +32,7 @@ DEFAULT_METADATA_FIELDS = (
     "RescaleSlope",
 )
 
-# DEFAULT_PECTORAL_MASKS_DIR = Path("~/Escritorio/Datasets/InBreast/pectoral_masks").expanduser()
+DEFAULT_PECTORAL_MASKS_DIR = Path("~/Escritorio/Datasets/InBreast/pectoral_masks").expanduser()
 DEFAULT_WHOLE_BREAST_MASKS_DIR = Path("~/Escritorio/Datasets/InBreast/whole_breast_mask").expanduser()
 DEFAULT_METADATA_DATASET_PATH = Path("~/Escritorio/Datasets/InBreast/inbreast_image_metadata.csv").expanduser()
 

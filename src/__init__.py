@@ -57,7 +57,7 @@ try:
         create_mlo_labeled_mask,
         create_labeled_mask,
         DEFAULT_METADATA_DATASET_PATH,
-        DEFAULT_PECTORAL_MASKS_DIR,
+        # DEFAULT_PECTORAL_MASKS_DIR,
         DEFAULT_WHOLE_BREAST_MASKS_DIR,
         export_dicom_tag_dataset,
         export_metadata_dataset,
@@ -75,7 +75,7 @@ try:
     __all__ = [
         "DEFAULT_DICOM_TAG_EXPORT_PATH",
         "DEFAULT_METADATA_DATASET_PATH",
-        "DEFAULT_PECTORAL_MASKS_DIR",
+        # "DEFAULT_PECTORAL_MASKS_DIR",
         "DEFAULT_WHOLE_BREAST_MASKS_DIR",
         "read_dicom_metadata",
         "collect_dicom_metadata_record",
@@ -101,7 +101,7 @@ except ModuleNotFoundError:
 
 try:
     from .visualization import (
-        DEFAULT_INBREAST_IMAGES_DIR,
+        #DEFAULT_INBREAST_IMAGES_DIR,
         load_dicom_image,
         list_dicom_images,
         show_dicom_image,
@@ -110,7 +110,7 @@ try:
     )
 
     __all__ += [
-        "DEFAULT_INBREAST_IMAGES_DIR",
+        #DEFAULT_INBREAST_IMAGES_DIR",
         "list_dicom_images",
         "load_dicom_image",
         "show_dicom_image",

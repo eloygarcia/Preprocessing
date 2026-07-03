@@ -11,7 +11,7 @@ import tempfile
 from pydicom.misc import is_dicom
 from tqdm import tqdm
 
-from src.preprocessing import DEFAULT_DICOM_TAG_SUMMARY_FIELDS, collect_dicom_tag_record
+from image.preprocessing import DEFAULT_DICOM_TAG_SUMMARY_FIELDS, collect_dicom_tag_record
 
 
 DEFAULT_DICOM_SUFFIXES = {".dcm", ".dicom"}

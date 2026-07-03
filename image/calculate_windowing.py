@@ -22,7 +22,6 @@ from typing import Tuple, Dict, List, Optional
 from pathlib import Path
 import json
 
-
 def _first_numeric(value) -> Optional[float]:
     """Return first numeric value from scalar or multi-value DICOM field."""
     if value is None:
@@ -42,7 +41,6 @@ def _first_numeric(value) -> Optional[float]:
 
     return float(value)
 
-
 def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
     """
     Extract VOI LUT parameters from a pydicom dataset.
@@ -53,13 +51,14 @@ def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
     width = _first_numeric(getattr(dcm, 'WindowWidth', None))
 
     if center is None or width is None or width <= 0:
+        print("Warning: DICOM VOI LUT parameters missing or invalid. Falling back to histogram-based windowing.")
         center, width = calculate_windowing(dcm.pixel_array, 
                                             'breast_tissue',
                                             exclude_background= True)
     
     intercept = _first_numeric(getattr(dcm, 'RescaleIntercept', None))
     slope = _first_numeric(getattr(dcm, 'RescaleSlope', None))
-    voi_func = getattr(dcm, 'VOILUTFunction', 'LINEAR')
+    voi_func = getattr(dcm, 'VOILUTFunction', 'SIGMOID')
 
     return {
         'window_center': int(round(center)),
@@ -69,14 +68,14 @@ def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
         'voi_lut_function': str(voi_func),
     }
 
-
 def should_invert_monochrome1(dicom_dataset) -> bool:
     """Return True when DICOM photometric interpretation is MONOCHROME1."""
     photometric = str(getattr(dicom_dataset, 'PhotometricInterpretation', '')).upper()
+    ## Different DICOM tags may indicate inversion is needed.
+    # MONOCHROME1 is the standard, but ....
     # (0008,0068) PresentationIntentType:  FOR PRESENTATION
     # (2050,0020) PresentationLUTShape:  IDENTITY
     return photometric == 'MONOCHROME1'
-
 
 def normalize_photometric(image: np.ndarray, dicom_dataset) -> Tuple[np.ndarray, bool]:
     """

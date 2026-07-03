@@ -1,3 +1,23 @@
+"""
+Apply windowing to DICOM images using VOI LUT parameters (window center and window width).
+This module is particularly useful for datasets where DICOM windowing metadata
+===========================================================================================
+Source: https://github.com/dangnh0611/kaggle_rsna_breast_cancer
+
+Pydicom has its own implementation of windowing: pydicom.pixels.apply_windowing
+
+Check also:   Module pydicom.pixels
+Functions: 
+- apply_color_lut(arr[, ds, palette]) --> Apply a color palette lookup table to arr.
+- apply_icc_profile(arr[, ds, transform, ...]) --> Apply an ICC Profile to arr, either from the dataset ds or an existing Pillow color transformation object transform.
+- apply_modality_lut(arr, ds) --> Apply a modality lookup table or rescale operation to arr.
+- apply_presentation_lut(arr, ds) --> Apply a Presentation LUT to arr and return the P-values.
+- apply_rescale(arr, ds) --> Apply a modality lookup table or rescale operation to arr.
+- apply_voi_lut(arr, ds[, index, prefer_lut]) --> Apply a VOI lookup table or windowing operation to arr.
+- apply_voi(arr, ds[, index]) --> Apply a VOI lookup table to arr.
+- apply_windowing(arr, ds[, index]) --> Apply a windowing operation to arr.
+"""
+
 import numpy as np
 #import torch
 
@@ -146,15 +166,19 @@ def apply_windowing(arr,
         windowing_func = _apply_windowing_np_v2
     elif backend == 'torch':
         windowing_func = _apply_windowing_torch
-    #else:
+    else:
         raise ValueError(
             f'Invalid backend {backend}, must be one of ["np_v1", "np_v2", "torch"]'
         )
 
-    arr = windowing_func(arr,
+    arr_windowed = windowing_func(arr,
                          window_width=window_width,
                          window_center=window_center,
                          voi_func=voi_func,
                          y_min=y_min,
                          y_max=y_max)
-    return arr
+    
+    ## To fit the initial image range, we can normalize the windowed image to the original range
+    arr_windowed = arr.max() * (arr_windowed- arr_windowed.min()) / (arr_windowed.max() - arr_windowed.min())
+    
+    return arr_windowed.astype( arr.dtype if isinstance(arr, np.ndarray) else arr_windowed.dtype)

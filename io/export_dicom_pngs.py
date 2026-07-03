@@ -6,29 +6,22 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from extract_dicoms import find_dicom_files
-from src.preprocessing import convert_dicom_to_uint8_png, get_dicom_png_output_path
-
+from io.extract_dicoms import find_dicom_files
+from image.preprocessing import convert_dicom_to_uint8_png, get_dicom_png_output_path
 
 def _parse_workers(value: str) -> int | str:
     if value.lower() == "auto":
         return "auto"
-
     workers = int(value)
     if workers < 1:
         raise argparse.ArgumentTypeError("workers must be at least 1 or 'auto'")
-
     return workers
-
 
 def _resolve_workers(workers: int | str) -> int:
     if workers == "auto":
         import os
-
         return max(1, min(8, os.cpu_count() or 1))
-
     return workers
-
 
 def export_dataset_dicom_pngs(
     dataset_root: str | Path,
@@ -88,7 +81,6 @@ def export_dataset_dicom_pngs(
 
     return saved_paths
 
-
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Encuentra archivos DICOM en un dataset y exporta PNGs de 8 bits manteniendo la estructura relativa.",
@@ -127,7 +119,6 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
     return parser
 
-
 def main() -> int:
     parser = build_argument_parser()
     args = parser.parse_args()
@@ -144,7 +135,6 @@ def main() -> int:
     print(f"DICOM files converted: {len(saved_paths)}")
     print(f"PNG dataset root: {Path(args.output_root).expanduser().resolve()}")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

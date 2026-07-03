@@ -58,14 +58,14 @@ def get_dicom_voi_lut_params(dcm) -> Optional[Dict[str, float]]:
     
     intercept = _first_numeric(getattr(dcm, 'RescaleIntercept', None))
     slope = _first_numeric(getattr(dcm, 'RescaleSlope', None))
-    voi_func = getattr(dcm, 'VOILUTFunction', 'SIGMOID')
+    voi_func = getattr(dcm, 'VOILUTFunction', None)
 
     return {
         'window_center': int(round(center)),
         'window_width': int(round(width)),
         'rescale_intercept': 0.0 if intercept is None else float(intercept),
         'rescale_slope': 1.0 if slope is None else float(slope),
-        'voi_lut_function': str(voi_func),
+        'voi_lut_function': str(voi_func) if voi_func is not None else 'LINEAR',
     }
 
 def should_invert_monochrome1(dicom_dataset) -> bool:
@@ -73,8 +73,9 @@ def should_invert_monochrome1(dicom_dataset) -> bool:
     photometric = str(getattr(dicom_dataset, 'PhotometricInterpretation', '')).upper()
     ## Different DICOM tags may indicate inversion is needed.
     # MONOCHROME1 is the standard, but ....
-    # (0008,0068) PresentationIntentType:  FOR PRESENTATION
-    # (2050,0020) PresentationLUTShape:  IDENTITY
+    # (0028,0004) Photometric Interpretation: MONOCHROME1 or MONOCHROME2
+    # (0008,0068) PresentationIntentType:  FOR PROCESSING o FOR PRESENTATION
+    # (2050,0020) PresentationLUTShape:  INVERSE or IDENTITY
     return photometric == 'MONOCHROME1'
 
 def normalize_photometric(image: np.ndarray, dicom_dataset) -> Tuple[np.ndarray, bool]:

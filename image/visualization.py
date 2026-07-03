@@ -21,14 +21,36 @@ DEFAULT_INBREAST_IMAGES_DIR = Path("~/Escritorio/Datasets/inbreast/ALL-IMGS").ex
 DEFAULT_RASTER_EXTENSIONS = (".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp")
 
 
-def list_dicom_images(images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR) -> list[Path]:
+
+def is_dicom(fichero):
+    try:
+        with open(fichero, "rb") as f:
+            f.seek(128)
+            return f.read(4) == b"DICM"
+    except Exception:
+        return False
+
+def list_dicom_images(images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR,
+                      recursive: bool = True,
+                      use_extensionless: bool = False) -> list[Path]:
+    
     images_path = Path(images_dir).expanduser()
     if not images_path.exists():
         raise FileNotFoundError(f"Images directory not found: {images_path}")
 
-    dicom_paths = sorted(images_path.glob("*.dcm"))
-    if not dicom_paths:
+    dicom_paths: list[Path]
+    if not use_extensionless:
+        if recursive:
+            dicom_paths = sorted(images_path.rglob("*.dcm")) + sorted(images_path.rglob("*.dicom"))
+        else:
+            dicom_paths = sorted(images_path.glob("*.dcm")) + sorted(images_path.glob("*.dicom"))
+    else:
+        dicom_paths = [f for f in Path(images_dir).glob("*") if f.is_file() and is_dicom(f)]
+    
+    if len(dicom_paths) == 0:
         raise FileNotFoundError(f"No DICOM images were found in: {images_path}")
+    
+    
 
     return dicom_paths
 

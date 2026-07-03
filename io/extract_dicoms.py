@@ -1,3 +1,13 @@
+"""
+Este módulo proporciona funciones para buscar archivos DICOM recursivamente en un dataset
+y exportar sus tags a un CSV.
+
+WARNING: Utilicese con cuidado. Los datasets de DICOM pueden ser muy grandes y contener muchos archivos,
+lo que puede llevar a un uso intensivo de memoria y tiempo de procesamiento.
+Este módulo es particularmente útil para datasets donde los metadatos de windowing DICOM
+no son confiables o están ausentes, y se requiere una extracción precisa de los tags DICOM para 
+análisis o procesamiento adicional.
+"""
 from __future__ import annotations
 
 import argparse

@@ -10,3 +10,7 @@ pillow
 imageio
 pydicom
 opencv-python-headless
+
+gdcm>=3.0.10
+pylibjpeg>=2.0
+pylibjpeg-libjpeg>=2.1

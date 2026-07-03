@@ -1,3 +1,8 @@
+"""
+Este módulo proporciona funciones para exportar archivos DICOM a PNGs de 8 bits manteniendo la estructura 
+relativa del dataset.
+"""
+
 from __future__ import annotations
 
 import argparse

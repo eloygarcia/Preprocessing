@@ -15,21 +15,57 @@ Pequena libreria para preprocesado de imagenes de mamografia (DICOM y raster), c
 
 ```text
 Preprocessing/
-├── extract_dicoms.py
-├── export_dicom_pngs.py
-├── requirement.txt
+|
+├──io/
+|   ├── extract_dicoms.py
+|   ├── export_dicom_pngs.py
 ├── notebooks/
 │   ├── 00_inbreast_visualization.ipynb
 │   ├── 01_csaws_visualization.ipynb
 │   ├── 02_cmmd_breast_regions.ipynb
 │   └── 03_inbreast_breast_regions.ipynb
-└── src/
-    ├── __init__.py
-    ├── csaws.py
-    ├── image_summary.py
-    ├── preprocessing.py
-    └── visualization.py
+├── src/
+|    ├── __init__.py
+|    ├── csaws.py
+|    ├── image_summary.py
+|    ├── preprocessing.py
+|    └── visualization.py
+├── Dockerfile
+└── requirement.txt
 ```
+
+### Nuevo esquema (para refactorizar si es necesario)
+mammography_preprocessing/
+│
+├── io/
+│   ├── dicom_loader.py
+│   ├── image_loader.py
+│
+├── metadata/
+│   ├── patient.py
+│   ├── acquisition.py
+│   ├── manufacturer.py
+│   ├── geometry.py
+│   ├── study.py
+│
+├── image/
+│   ├── photometric.py
+│   ├── windowing.py
+│   ├── normalization.py
+│   ├── resize.py
+│   ├── masking.py
+│
+├── quality/
+│   ├── validation.py
+│   ├── consistency_checks.py
+│
+├── models/
+│   ├── metadata_models.py
+│
+└── pipelines/
+    ├── standard_preprocessing.py
+    ├── vendor_normalization.py
+
 
 ### Modulos
 

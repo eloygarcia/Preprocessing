@@ -11,48 +11,52 @@ import csv
 import numpy as np
 import pydicom
 from PIL import Image
+from pydicom.misc import is_dicom
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-
-DEFAULT_INBREAST_IMAGES_DIR = Path("~/Escritorio/Datasets/inbreast/ALL-IMGS").expanduser()
+DEFAULT_INBREAST_IMAGES_DIR = Path("~/Escritorio/Datasets/").expanduser()
 DEFAULT_RASTER_EXTENSIONS = (".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp")
 
 
-
-def is_dicom(fichero):
-    try:
-        with open(fichero, "rb") as f:
-            f.seek(128)
-            return f.read(4) == b"DICM"
-    except Exception:
-        return False
-
-def list_dicom_images(images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR,
-                      recursive: bool = True,
-                      use_extensionless: bool = False) -> list[Path]:
-    
+def list_dicom_images(
+    images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR,
+    recursive: bool = True,
+    use_extensionless: bool = False,
+) -> list[Path]:
     images_path = Path(images_dir).expanduser()
     if not images_path.exists():
         raise FileNotFoundError(f"Images directory not found: {images_path}")
 
-    dicom_paths: list[Path]
-    if not use_extensionless:
-        if recursive:
-            dicom_paths = sorted(images_path.rglob("*.dcm")) + sorted(images_path.rglob("*.dicom"))
-        else:
-            dicom_paths = sorted(images_path.glob("*.dcm")) + sorted(images_path.glob("*.dicom"))
+    if recursive:
+        dicom_paths = sorted(images_path.rglob("*.dcm")) + sorted(images_path.rglob("*.dicom"))
     else:
-        dicom_paths = [f for f in Path(images_dir).glob("*") if f.is_file() and is_dicom(f)]
-    
-    if len(dicom_paths) == 0:
+        dicom_paths = sorted(images_path.glob("*.dcm")) + sorted(images_path.glob("*.dicom"))
+
+    if use_extensionless:
+        candidates = images_path.rglob("*") if recursive else images_path.glob("*")
+        dicom_paths.extend(path for path in candidates if path.is_file() and path.suffix == "" and is_dicom(path))
+
+    dicom_paths = sorted(set(dicom_paths))
+    if not dicom_paths:
         raise FileNotFoundError(f"No DICOM images were found in: {images_path}")
-    
-    
 
     return dicom_paths
+
+
+# def is_dicom(fichero):
+#     """
+#     Check if a file is a DICOM file by reading the first 132 bytes and 
+#     looking for the 'DICM' magic number at byte offset 128.
+#     """
+#     try:
+#         with open(fichero, "rb") as f:
+#             f.seek(128)
+#             return f.read(4) == b"DICM"
+#     except Exception:
+#         return False
 
 
 def load_dicom_image(image_path: str | Path) -> np.ndarray:

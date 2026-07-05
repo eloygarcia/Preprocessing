@@ -96,7 +96,7 @@ try:
         "save_labeled_mask",
         "save_dataset_labeled_masks",
     ]
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     pass
 
 try:
@@ -117,5 +117,5 @@ try:
         "show_dataset_segmentation_overlays_batch",
         "show_dicom_with_bbox",
     ]
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     pass

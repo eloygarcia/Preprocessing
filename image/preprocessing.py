@@ -13,6 +13,8 @@ from scipy import ndimage as ndi
 from skimage.measure import label, regionprops
 from skimage.morphology import closing, disk
 
+from image.apply_windowing import apply_windowing
+
 
 DEFAULT_METADATA_FIELDS = (
     "PatientID",
@@ -552,6 +554,22 @@ def convert_dicom_to_uint8_png(
     destination = Path(output_path).expanduser()
     destination.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(image_uint8, mode="L").save(destination)
+
+    return destination
+
+def convert_dicom_to_uint16_png(
+    image_path: str | Path,
+    output_path: str | Path,
+    use_windowing: bool = False,
+) -> Path:
+    image = load_dicom_pixels(image_path, normalize=not use_windowing)
+    if use_windowing:
+        image = apply_windowing(image) ## Check before continue
+
+    image_uint16 = np.clip(np.rint(image * 65535.0), 0, 65535).astype(np.uint16)
+    destination = Path(output_path).expanduser()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(image_uint16, mode="I;16").save(destination)
 
     return destination
 

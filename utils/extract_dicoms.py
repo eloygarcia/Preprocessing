@@ -30,18 +30,15 @@ DEFAULT_DICOM_SUFFIXES = {".dcm", ".dicom"}
 def _parse_workers(value: str) -> int | str:
     if value.lower() == "auto":
         return "auto"
-
     workers = int(value)
     if workers < 1:
         raise argparse.ArgumentTypeError("workers must be at least 1 or 'auto'")
-
     return workers
 
 
 def _resolve_workers(workers: int | str) -> int:
     if workers == "auto":
         return max(1, min(8, os.cpu_count() or 1))
-
     return workers
 
 
@@ -54,11 +51,14 @@ def _iter_leaf_directory_files(root: Path):
         yield leaf_dir, sorted(leaf_dir / file_name for file_name in filenames)
 
 
+
+"""
 def find_dicom_files(
     dataset_root: str | Path,
     include_extensionless: bool = False,
     extensionless_only: bool = False,
 ) -> list[Path]:
+    
     root = Path(dataset_root).expanduser()
     if not root.exists():
         raise FileNotFoundError(f"Dataset directory not found: {root}")
@@ -96,7 +96,7 @@ def find_dicom_files(
         raise FileNotFoundError(f"No DICOM files were found in: {root}")
 
     return dicom_paths
-
+"""
 
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(

@@ -1,0 +1,109 @@
+Preprocessing project usage guide
+================================
+
+Goal
+----
+Run preprocessing and YOLOX inference inside Docker, while working from Jupyter notebooks outside the container.
+
+1) Build Docker image
+---------------------
+From project root:
+
+  docker build -f Dockerfile -t preprocessing:dev .
+
+Nota: por defecto esta build instala tambien `MyYoloX` (requirements + editable install),
+para evitar repetir setup manual.
+
+Si quieres desactivarlo (imagen mas ligera):
+
+  docker build -f Dockerfile --build-arg INSTALL_MYYOLOX=0 -t preprocessing:dev .
+
+2) Run container with project mounted
+-------------------------------------
+CPU mode:
+
+  docker run --rm -it \
+    -v $(pwd):/workspace \
+    -w /workspace \
+    preprocessing:dev bash
+
+GPU mode (NVIDIA runtime):
+
+  docker run --rm -it --gpus all \
+    -v $(pwd):/workspace \
+    -w /workspace \
+    preprocessing:dev bash
+
+3) Verify MyYoloX install in container
+--------------------------------------
+Optional sanity check:
+
+  python -c "import yolox; print('YOLOX import OK')"
+
+4) Notebook workflow (outside container)
+----------------------------------------
+Recommended options:
+
+- Option A: Run Jupyter kernel inside the container and connect from VS Code.
+- Option B: Open notebook in VS Code but use Docker/Dev Container Python interpreter.
+
+This ensures notebook imports match container libraries.
+
+5) Use YOLOX interface from notebook
+------------------------------------
+Example:
+
+  import cv2
+  from utils.yolox_interface import YOLOXNotebookInterface
+
+  predictor = YOLOXNotebookInterface(
+      exp_file="/workspace/MyYoloX/exps/default/yolox_nano.py",
+      ckpt_path="/workspace/MyYoloX/archive/yolox_nano_416_roi_torch.pth",
+      device="gpu",     # "cpu" if no CUDA
+      conf=0.25,
+      nms=0.45,
+      tsize=416,
+      fp16=False,
+      yolox_root="/workspace/MyYoloX",
+  )
+
+  image_rgb = cv2.cvtColor(cv2.imread("/workspace/path/to/image.png"), cv2.COLOR_BGR2RGB)
+
+  detections = predictor.predict(image_rgb, input_format="RGB")
+  print(detections)
+
+Detection format:
+
+  [
+    {
+      "bbox_xyxy": [x1, y1, x2, y2],
+      "score": 0.91,
+      "class_id": 0,
+      "class_name": "person"
+    }
+  ]
+
+6) Get detections + visualization
+---------------------------------
+
+  detections, vis_rgb = predictor.predict_with_image(image_rgb)
+
+  # in notebook
+  import matplotlib.pyplot as plt
+  plt.figure(figsize=(8, 8))
+  plt.imshow(vis_rgb)
+  plt.axis("off")
+
+7) Common issues
+----------------
+- ModuleNotFoundError: yolox
+  Install MyYoloX in the same environment where notebook kernel runs.
+
+- CUDA not available with device="gpu"
+  Switch to device="cpu" or verify NVIDIA runtime and torch CUDA support.
+
+- Wrong colors / channels
+  If image is OpenCV BGR, call predict(image_bgr, input_format="BGR").
+
+- Grayscale images
+  The interface auto-converts grayscale to 3 channels before inference.

@@ -27,6 +27,7 @@ def extract_patient_info(ds):
         "PatientName": getattr(ds, "PatientName", None),
         "PatientBirthDate": getattr(ds, "PatientBirthDate", None),
         "PatientSex": getattr(ds, "PatientSex", None),
+        "PatientAge": getattr(ds, "PatientAge", None),
     }
     return patient_info
 
@@ -77,9 +78,10 @@ def extract_image_info(ds):
         "Rows": getattr(ds, "Rows", None),
         "Columns": getattr(ds, "Columns", None),
         "PixelSpacing": getattr(ds, "PixelSpacing", None),
-        "SliceThickness": getattr(ds, "SliceThickness", None),
-        "ImagePositionPatient": getattr(ds, "ImagePositionPatient", None),
-        "ImageOrientationPatient": getattr(ds, "ImageOrientationPatient", None),
+        "PixelImagerSpacing": getattr(ds, "PixelImagerSpacing", None),
+        #"SliceThickness": getattr(ds, "SliceThickness", None),
+        #"ImagePositionPatient": getattr(ds, "ImagePositionPatient", None),
+        #"ImageOrientationPatient": getattr(ds, "ImageOrientationPatient", None),
     }
     return image_info
 
@@ -113,8 +115,6 @@ def extract_compression_info(ds):
     """ 
     compression_info = {
         "CompressionForceNewtons": getattr(ds, "CompressionForceNewtons", None),
-        "CompressionPressureKPa": getattr(ds, "CompressionPressureKPa", None),
-        "CompressionContactArea": getattr(ds, "CompressionContactArea", None),
     }
     return compression_info
 

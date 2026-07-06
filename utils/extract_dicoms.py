@@ -22,7 +22,7 @@ from pydicom.misc import is_dicom
 from tqdm import tqdm
 
 from image.preprocessing import DEFAULT_DICOM_TAG_SUMMARY_FIELDS, collect_dicom_tag_record
-
+from utils.extract_dicoms import find_dicom_files
 
 DEFAULT_DICOM_SUFFIXES = {".dcm", ".dicom"}
 

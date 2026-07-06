@@ -20,14 +20,14 @@ from image.visualization import DEFAULT_INBREAST_IMAGES_DIR
 
 def find_dicom_images(images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR,
                       recursive: bool = True,
-                      use_extensionless: bool = False) -> list[Path]:
+                      include_extensionless: bool = False) -> list[Path]:
     """
     List all DICOM images in a directory, optionally searching recursively.
 
     Parameters:
         images_dir (str | Path): The directory to search for DICOM images.
         recursive (bool): Whether to search recursively.
-        use_extensionless (bool): Whether to include files without extensions that are DICOM images.
+        include_extensionless (bool): Whether to include files without extensions that are DICOM images.
     Returns:
         list[Path]: A list of paths to DICOM images.
     """
@@ -36,7 +36,7 @@ def find_dicom_images(images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR,
         raise FileNotFoundError(f"Images directory not found: {images_path}")
 
     dicom_paths: list[Path]
-    if not use_extensionless:
+    if not include_extensionless:
         if recursive:
             dicom_paths = sorted(images_path.rglob("*.dcm")) + sorted(images_path.rglob("*.dicom"))
         else:

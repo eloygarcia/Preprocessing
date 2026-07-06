@@ -253,3 +253,8 @@ python -m src.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pair
 
 - Muchas rutas por defecto apuntan a directorios locales concretos del autor (por ejemplo en `~/Escritorio/Datasets/...`).
 - Para reproducibilidad en otros entornos, pasa `dataset_dir`, `output_path`, `masks_dir` y `output_dir` de forma explicita en tus scripts.
+
+## Guia de uso
+
+- Consulta `usage.txt` para un flujo completo de trabajo con Docker y notebooks.
+- Incluye pasos para integrar `MyYoloX` y ejecutar inferencia desde notebooks con `utils.YOLOXNotebookInterface`.

@@ -12,7 +12,11 @@ from pathlib import Path
 from tqdm import tqdm
 
 from utils.extract_dicoms import find_dicom_files
-from image.preprocessing import convert_dicom_to_uint8_png, get_dicom_png_output_path
+from image.preprocessing import (
+    convert_dicom_to_uint8_png, 
+    convert_dicom_to_uint16_png,
+    get_dicom_png_output_path,
+)
 
 def _parse_workers(value: str) -> int | str:
     if value.lower() == "auto":
@@ -31,6 +35,7 @@ def _resolve_workers(workers: int | str) -> int:
 def export_dataset_dicom_pngs(
     dataset_root: str | Path,
     output_root: str | Path,
+    save_as_uint16:bool = False,
     include_extensionless: bool = False,
     extensionless_only: bool = False,
     use_windowing: bool = False,
@@ -39,8 +44,9 @@ def export_dataset_dicom_pngs(
     
     dicom_paths = find_dicom_files(
         dataset_root,
+        recursive=True,
         include_extensionless=include_extensionless,
-        extensionless_only=extensionless_only,
+        #extensionless_only=extensionless_only,
     )
     resolved_workers = _resolve_workers(workers)
 
@@ -54,7 +60,11 @@ def export_dataset_dicom_pngs(
             for dicom_path in dicom_paths:
                 output_path = get_dicom_png_output_path(dicom_path, dataset_root=dataset_root, output_root=output_root)
                 saved_paths.append(
-                    convert_dicom_to_uint8_png(
+                    convert_dicom_to_uint16_png(
+                        dicom_path,
+                        output_path,
+                        use_windowing=use_windowing,
+                    ) if save_as_uint16 else convert_dicom_to_uint8_png(
                         dicom_path,
                         output_path,
                         use_windowing=use_windowing,
@@ -66,7 +76,7 @@ def export_dataset_dicom_pngs(
             with ThreadPoolExecutor(max_workers=resolved_workers) as executor:
                 futures = {
                     executor.submit(
-                        convert_dicom_to_uint8_png,
+                        convert_dicom_to_uint16_png if save_as_uint16 else convert_dicom_to_uint8_png,
                         dicom_path,
                         get_dicom_png_output_path(dicom_path, dataset_root=dataset_root, output_root=output_root),
                         use_windowing,
@@ -122,6 +132,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=1,
         help="Numero de hilos para exportacion en paralelo o 'auto'. Por defecto 1.",
     )
+    parser.add_argument(
+        "--save-as-uint16",
+        action="store_true",
+        help="Guarda los PNGs como uint16 en lugar de uint8.",
+    )
 
     return parser
 
@@ -136,6 +151,7 @@ def main() -> int:
         extensionless_only=args.extensionless_only,
         use_windowing=args.use_windowing,
         workers=args.workers,
+        save_as_uint16=args.save_as_uint16,
     )
 
     print(f"DICOM files converted: {len(saved_paths)}")

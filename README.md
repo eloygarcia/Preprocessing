@@ -15,26 +15,39 @@ Pequena libreria para preprocesado de imagenes de mamografia (DICOM y raster), c
 
 ```text
 Preprocessing/
-|
-├──io/
-|   ├── extract_dicoms.py
-|   ├── export_dicom_pngs.py
+├── image/
+│   ├── apply_windowing.py
+│   ├── calculate_windowing.py
+│   ├── csaws.py
+│   ├── image_summary.py
+│   ├── preprocessing.py
+│   └── visualization.py
+├── metadata/
+│   └── extract_metadata.py
+├── utils/
+│   ├── extract_dicoms.py
+│   ├── export_dicom_pngs.py
+│   ├── utils.py
+│   └── yolox_interface.py
+├── common_tasks/
+│   ├── serve/
+│   └── wrappers/
 ├── notebooks/
 │   ├── 00_inbreast_visualization.ipynb
 │   ├── 01_csaws_visualization.ipynb
 │   ├── 02_cmmd_breast_regions.ipynb
-│   └── 03_inbreast_breast_regions.ipynb
-├── src/
-|    ├── __init__.py
-|    ├── csaws.py
-|    ├── image_summary.py
-|    ├── preprocessing.py
-|    └── visualization.py
+│   ├── 03_mammomx_visualization.ipynb
+│   ├── 04_vindr_visualization.ipynb
+│   ├── 05_yolox_inference_demo.ipynb
+│   └── XX_vendor_device_barplots.ipynb
+├── docker/
+│   └── Dockerfile.services
 ├── Dockerfile
 └── requirement.txt
 ```
 
 ### Nuevo esquema (para refactorizar si es necesario)
+```text
 mammography_preprocessing/
 │
 ├── io/
@@ -65,38 +78,38 @@ mammography_preprocessing/
 └── pipelines/
     ├── standard_preprocessing.py
     ├── vendor_normalization.py
-
+```
 
 ### Modulos
 
-- `src/preprocessing.py`
+- `image/preprocessing.py`
   - Lectura de metadatos DICOM.
   - Exportacion de datasets de metadatos y de tags DICOM.
   - Carga de pixeles DICOM, windowing, segmentacion y aplicacion de mascara.
   - Generacion y guardado de mascaras etiquetadas para INBreast.
 
-- `src/visualization.py`
+- `image/visualization.py`
   - Listado/carga de imagenes DICOM.
   - Visualizacion rapida con Matplotlib.
 
-- `src/image_summary.py`
+- `image/image_summary.py`
   - Listado de imagenes raster (PNG, JPG, TIF, ...).
   - Extraccion y exportacion de resumen de imagenes raster a CSV.
 
-- `src/csaws.py`
+- `image/csaws.py`
   - Utilidades para dataset CSAWS.
   - Carga de imagen base y labels (`mammary_gland`, `pectoral_muscle`).
   - Creacion de mascara combinada y exportacion de resumen a CSV.
 
-- `extract_dicoms.py`
+- `utils/extract_dicoms.py`
   - CLI para descubrimiento recursivo de DICOMs y exportacion masiva de tags a CSV.
 
-- `export_dicom_pngs.py`
+- `utils/export_dicom_pngs.py`
   - CLI para convertir un dataset DICOM a PNG de 8 bits.
   - Mantiene la estructura relativa de carpetas bajo una nueva carpeta raiz.
 
-- `src/__init__.py`
-  - Re-exporta la API publica principal para usar el paquete desde un unico punto de entrada.
+- `image/__init__.py`
+  - Re-exporta parte de la API publica principal para usar el paquete desde un unico punto de entrada.
 
 ## Instalacion
 
@@ -113,13 +126,9 @@ pip install -r requirement.txt
 ### 1) Trabajar con DICOM desde Python
 
 ```python
-from src import (
-    list_dicom_images,
-    load_dicom_pixels,
-    apply_windowing,
-    segment_breast_region,
-    save_labeled_mask,
-)
+from image.visualization import list_dicom_images
+from image.apply_windowing import apply_windowing
+from image.preprocessing import load_dicom_pixels, segment_breast_region, save_labeled_mask
 
 dicoms = list_dicom_images()
 image = load_dicom_pixels(dicoms[0])
@@ -133,7 +142,8 @@ print(output_path)
 ### 2) Exportar metadatos DICOM
 
 ```python
-from src import list_dicom_images, export_metadata_dataset
+from image.visualization import list_dicom_images
+from image.preprocessing import export_metadata_dataset
 
 dicoms = list_dicom_images()
 csv_path = export_metadata_dataset(dicoms, output_path="./data/inbreast_metadata.csv")
@@ -143,7 +153,7 @@ print(csv_path)
 ### 3) Exportar tags DICOM con CLI
 
 ```bash
-python extract_dicoms.py /ruta/al/dataset /ruta/salida/tags.csv \
+python utils/extract_dicoms.py /ruta/al/dataset /ruta/salida/tags.csv \
   --include-extensionless \
   --workers auto \
   --batch-size 500
@@ -160,11 +170,7 @@ Opciones utiles del CLI:
 ### 4) Flujo CSAWS
 
 ```python
-from src import (
-    list_csaws_images,
-    create_csaws_combined_mask,
-    save_csaws_dataset_combined_masks,
-)
+from image.csaws import list_csaws_images, create_csaws_combined_mask, save_csaws_dataset_combined_masks
 
 images = list_csaws_images()
 mask = create_csaws_combined_mask(images[0])
@@ -176,7 +182,7 @@ print(mask.shape, len(saved))
 ### 5) Convertir un dataset DICOM a PNG de 8 bits
 
 ```bash
-python export_dicom_pngs.py /ruta/dataset_dicom /ruta/dataset_png \
+python utils/export_dicom_pngs.py /ruta/dataset_dicom /ruta/dataset_png \
   --include-extensionless \
   --workers auto
 ```
@@ -199,7 +205,7 @@ Opciones utiles:
 ### 6) Revisar en batch imagen + segmentacion solapada (terminal)
 
 ```bash
-python -m src.visualization /ruta/imagenes /ruta/mascaras \
+python -m image.visualization /ruta/imagenes /ruta/mascaras \
   --batch-size 8 \
   --columns 4 \
   --alpha 0.35
@@ -225,7 +231,7 @@ image_path,mask_path
 ```
 
 ```bash
-python -m src.visualization --pairs-csv /ruta/pairs.csv
+python -m image.visualization --pairs-csv /ruta/pairs.csv
 ```
 
 Opciones de CSV:
@@ -239,7 +245,7 @@ Opciones de CSV:
 Si en el CSV usas rutas relativas, puedes pasar carpetas base:
 
 ```bash
-python -m src.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pairs.csv
+python -m image.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pairs.csv
 ```
 
 ## Notebooks
@@ -247,7 +253,10 @@ python -m src.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pair
 - `notebooks/00_inbreast_visualization.ipynb`: exploracion visual de INBreast.
 - `notebooks/01_csaws_visualization.ipynb`: exploracion visual de CSAWS.
 - `notebooks/02_cmmd_breast_regions.ipynb`: visualizacion de bounding boxes de regiones mamarias en CMMD.
-- `notebooks/03_inbreast_breast_regions.ipynb`: visualizacion de bounding boxes de regiones mamarias en INBreast.
+- `notebooks/03_mammomx_visualization.ipynb`: exploracion visual de Mammo-MX.
+- `notebooks/04_vindr_visualization.ipynb`: exploracion visual de VinDr.
+- `notebooks/05_yolox_inference_demo.ipynb`: prueba completa de inferencia con YOLOX y segmentacion MAseg sobre imagenes DICOM.
+- `notebooks/XX_vendor_device_barplots.ipynb`: analisis de fabricantes y dispositivos.
 
 ## Notas
 
@@ -257,4 +266,61 @@ python -m src.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pair
 ## Guia de uso
 
 - Consulta `usage.txt` para un flujo completo de trabajo con Docker y notebooks.
-- Incluye pasos para integrar `MyYoloX` y ejecutar inferencia desde notebooks con `utils.YOLOXNotebookInterface`.
+- Incluye pasos para integrar `MyYoloX` y ejecutar inferencia desde notebooks con `utils.yolox_interface.YOLOXNotebookInterface`.
+
+## Docker y servicios de inferencia
+
+El proyecto soporta dos formas principales de ejecucion:
+
+- Contenedor unico para trabajo interactivo (scripts y notebooks).
+- Stack de servicios con Docker Compose (notebook + APIs de modelos).
+
+### Build de imagen
+
+```bash
+docker build -f Dockerfile -t preprocessing:dev .
+```
+
+El `Dockerfile` base instala dependencias comunes del proyecto. Los bloques de instalacion opcional de `MyYoloX` y MAseg estan dejados comentados como referencia para un build manual.
+
+### Stack con Docker Compose
+
+Archivo: `docker-compose.yml`
+Dockerfile de servicios: `docker/Dockerfile.services`
+
+```bash
+docker compose up --build
+```
+
+Servicios disponibles:
+
+- Notebook (JupyterLab): `http://localhost:8888`
+- YOLOX API: `http://localhost:8001`
+- MAseg API: `http://localhost:8002`
+
+Health checks rapidos:
+
+```bash
+curl http://localhost:8001/health
+curl http://localhost:8002/health
+```
+
+## Wrappers por tarea
+
+Para estandarizar inferencia de modelos por tarea, los wrappers se ubican en:
+
+- `common_tasks/wrappers/`
+- Documentacion de organizacion de tareas: `common_tasks/README.md`
+
+Wrappers actuales:
+
+- Deteccion YOLOX para uso en notebook: `utils/yolox_interface.py`
+- Segmentacion MAseg: `common_tasks/wrappers/segmentation/maseg_wrapper.py`
+
+## Notas de rutas
+
+- En este repositorio la raiz de codigo Python vive en `image/`, `metadata/`, `utils/` y `common_tasks/`, no en un paquete `src/`.
+- Los comandos CLI de ejemplo asumen que se ejecutan desde la raiz del repositorio.
+- Dar a cada servicio su stage/imagen en `docker/Dockerfile.services`.
+- Montar codigo y pesos como volumenes (`/workspace`) para iterar rapido.
+- Reconstruir solo el servicio afectado cuando cambian dependencias.

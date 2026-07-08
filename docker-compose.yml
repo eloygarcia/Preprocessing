@@ -1,0 +1,63 @@
+name: preprocessing-stack
+
+services:
+  notebook:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.services
+      target: notebook
+    image: preprocessing:notebook
+    container_name: preprocessing-notebook
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - ~/Escritorio/Datasets:/workspace/Data
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHONPATH=/workspace
+    gpus: all
+
+  yolox-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.services
+      target: yolox_api
+    image: preprocessing:yolox-api
+    container_name: preprocessing-yolox-api
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - ~/Escritorio/Datasets:/workspace/Data
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONPATH=/workspace
+      - YOLOX_ROOT=/workspace/MyYoloX
+      - YOLOX_EXP_FILE=/workspace/MyYoloX/exps/default/yolox_nano.py
+      - YOLOX_CKPT=/workspace/MyYoloX/archive/yolox_nano_416_roi_torch.pth
+      - YOLOX_DEVICE=gpu
+      - YOLOX_CONF=0.25
+      - YOLOX_NMS=0.45
+      - YOLOX_TSIZE=416
+      - YOLOX_FP16=0
+    gpus: all
+
+  maseg-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.services
+      target: maseg_api
+    image: preprocessing:maseg-api
+    container_name: preprocessing-maseg-api
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - ~/Escritorio/Datasets:/workspace/Data
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONPATH=/workspace
+      - MASEG_ROOT=/workspace/common_tasks/segmentation/BreastSegmentationUnet/maseg
+      - MASEG_WEIGHTS=/workspace/common_tasks/segmentation/BreastSegmentationUnet/maseg/weights/segmentation_weights.ckpt
+

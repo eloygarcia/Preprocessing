@@ -1,109 +1,198 @@
-Preprocessing project usage guide
-================================
+============================================================
+  Preprocessing project - Guia de arranque y uso
+============================================================
 
-Goal
-----
-Run preprocessing and YOLOX inference inside Docker, while working from Jupyter notebooks outside the container.
+RESUMEN RAPIDO
+--------------
+Tres comandos para tener todo funcionando:
 
-1) Build Docker image
----------------------
-From project root:
+  cd ~/Escritorio/WorkInProgress/Preprocessing
+  docker compose build          # solo la primera vez o si cambian deps
+  docker compose up -d --force-recreate  # levanta con imagenes recien construidas
 
-  docker build -f Dockerfile -t preprocessing:dev .
+Después abre:  http://127.0.0.1:8888  (el token lo ves en la sección 4)
 
-Nota: por defecto esta build instala tambien `MyYoloX` (requirements + editable install),
-para evitar repetir setup manual.
 
-Si quieres desactivarlo (imagen mas ligera):
+============================================================
+1. REQUISITOS PREVIOS
+============================================================
 
-  docker build -f Dockerfile --build-arg INSTALL_MYYOLOX=0 -t preprocessing:dev .
+- Docker con soporte GPU (nvidia-container-toolkit instalado)
+- Datasets locales en:  ~/Escritorio/Datasets/
+  Estructura esperada:
+    ~/Escritorio/Datasets/
+    ├── INbreast/AllDICOMs/       <- usado en notebook 05
+    └── Mammo-MX/B1/              <- alternativa
+- Repositorio clonado en:  ~/Escritorio/WorkInProgress/Preprocessing/
 
-2) Run container with project mounted
--------------------------------------
-CPU mode:
 
-  docker run --rm -it \
-    -v $(pwd):/workspace \
-    -w /workspace \
-    preprocessing:dev bash
+============================================================
+2. ESTRUCTURA DEL PROYECTO (relevante para ejecucion)
+============================================================
 
-GPU mode (NVIDIA runtime):
+  Preprocessing/
+  ├── docker-compose.yml             <- define los 3 servicios
+  ├── docker/
+  │   └── Dockerfile.services        <- imagen base + stages por servicio
+  ├── notebooks/
+  │   └── 05_yolox_inference_demo.ipynb  <- notebook de prueba completo
+  ├── image/
+  │   ├── preprocessing.py           <- utilidades DICOM, metadatos y mascaras
+  │   └── visualization.py           <- visualizacion DICOM y overlays
+  ├── utils/
+  │   ├── extract_dicoms.py           <- CLI para exportar tags DICOM
+  │   ├── export_dicom_pngs.py        <- CLI para convertir DICOM a PNG
+  │   └── yolox_interface.py          <- wrapper YOLOX para notebooks
+  ├── common_tasks/
+  │   ├── wrappers/segmentation/
+  │   │   └── maseg_wrapper.py       <- wrapper MAseg para notebooks
+  │   └── serve/
+  │       ├── yolox_api.py           <- FastAPI YOLOX (puerto 8001)
+  │       └── maseg_api.py           <- FastAPI MAseg (puerto 8002)
+  └── MyYoloX/                       <- repo YOLOX personalizado
+      └── archive/yolox_nano_416_roi_torch.pth
 
-  docker run --rm -it --gpus all \
-    -v $(pwd):/workspace \
-    -w /workspace \
-    preprocessing:dev bash
 
-3) Verify MyYoloX install in container
---------------------------------------
-Optional sanity check:
+============================================================
+3. VOLUMENES MONTADOS EN LOS CONTENEDORES
+============================================================
 
-  python -c "import yolox; print('YOLOX import OK')"
+  Host                              Contenedor
+  --------------------------------  -----------------------
+  ~/Escritorio/WorkInProgress/      /workspace         (codigo)
+    Preprocessing/
+  ~/Escritorio/Datasets/            /workspace/Data    (datos)
 
-4) Notebook workflow (outside container)
-----------------------------------------
-Recommended options:
+Desde el notebook, los datasets se leen en /workspace/Data/...
+Desde fuera del contenedor, estan en ~/Escritorio/Datasets/...
 
-- Option A: Run Jupyter kernel inside the container and connect from VS Code.
-- Option B: Open notebook in VS Code but use Docker/Dev Container Python interpreter.
 
-This ensures notebook imports match container libraries.
+============================================================
+4. ARRANQUE COMPLETO PASO A PASO
+============================================================
 
-5) Use YOLOX interface from notebook
-------------------------------------
-Example:
+-- Paso 1: construir imagenes (solo si es la primera vez
+           o si cambian dependencias Python/apt) --
 
-  import cv2
-  from utils.yolox_interface import YOLOXNotebookInterface
+  cd ~/Escritorio/WorkInProgress/Preprocessing
+  docker compose build
 
-  predictor = YOLOXNotebookInterface(
-      exp_file="/workspace/MyYoloX/exps/default/yolox_nano.py",
-      ckpt_path="/workspace/MyYoloX/archive/yolox_nano_416_roi_torch.pth",
-      device="gpu",     # "cpu" if no CUDA
-      conf=0.25,
-      nms=0.45,
-      tsize=416,
-      fp16=False,
-      yolox_root="/workspace/MyYoloX",
-  )
+  Para reconstruir solo un servicio:
+    docker compose build yolox-api
+    docker compose build maseg-api
+    docker compose build notebook
 
-  image_rgb = cv2.cvtColor(cv2.imread("/workspace/path/to/image.png"), cv2.COLOR_BGR2RGB)
+-- Paso 2: levantar servicios en background --
 
-  detections = predictor.predict(image_rgb, input_format="RGB")
-  print(detections)
+  docker compose up -d --force-recreate
 
-Detection format:
+-- Paso 3: comprobar que todo esta vivo --
 
-  [
-    {
-      "bbox_xyxy": [x1, y1, x2, y2],
-      "score": 0.91,
-      "class_id": 0,
-      "class_name": "person"
-    }
-  ]
+  docker compose ps
+  curl http://localhost:8001/health    # {"status":"ok","service":"yolox"}
+  curl http://localhost:8002/health    # {"status":"ok","service":"maseg"}
 
-6) Get detections + visualization
----------------------------------
+-- Paso 4: obtener el token de JupyterLab --
 
-  detections, vis_rgb = predictor.predict_with_image(image_rgb)
+  docker logs preprocessing-notebook 2>&1 | grep 'token='
 
-  # in notebook
-  import matplotlib.pyplot as plt
-  plt.figure(figsize=(8, 8))
-  plt.imshow(vis_rgb)
-  plt.axis("off")
+  Abre en el navegador o en VS Code:
+    http://127.0.0.1:8888/lab?token=<TOKEN>
 
-7) Common issues
-----------------
-- ModuleNotFoundError: yolox
-  Install MyYoloX in the same environment where notebook kernel runs.
+-- Paso 5: conectar VS Code al kernel del contenedor --
 
-- CUDA not available with device="gpu"
-  Switch to device="cpu" or verify NVIDIA runtime and torch CUDA support.
+  1. Abre notebooks/05_yolox_inference_demo.ipynb
+  2. Selector de kernel -> "Existing Jupyter Server"
+  3. Pega la URL con token del paso 4
 
-- Wrong colors / channels
-  If image is OpenCV BGR, call predict(image_bgr, input_format="BGR").
+-- Paso 6: ejecutar el notebook de prueba --
 
-- Grayscale images
-  The interface auto-converts grayscale to 3 channels before inference.
+  notebooks/05_yolox_inference_demo.ipynb
+  Ejecuta celdas en orden:
+    Celdas 1-9   -> carga DICOM, preprocesado, inferencia YOLOX directa
+    Celdas 10-13 -> segmentacion MAseg
+    Celdas 14-17 -> prueba via API HTTP (yolox-api y maseg-api)
+
+
+============================================================
+5. SERVICIOS DISPONIBLES
+============================================================
+
+  Servicio          URL                    Descripcion
+  ----------------  ---------------------  -----------------------
+  JupyterLab        http://localhost:8888  Notebooks interactivos
+  YOLOX API         http://localhost:8001  Deteccion bounding boxes
+  MAseg API         http://localhost:8002  Segmentacion pectoral
+
+  Endpoints API:
+    GET  /health  -> {"status":"ok","service":"<nombre>"}
+    POST /infer   -> recibe imagen PNG/JPG como multipart/form-data
+                     devuelve JSON con detecciones o mascara
+
+  Ejemplo curl YOLOX:
+    curl -s -X POST http://localhost:8001/infer \
+      -F "file=@/ruta/imagen.png" \
+      -F "input_format=BGR"
+
+  Ejemplo curl MAseg:
+    curl -s -X POST http://localhost:8002/infer \
+      -F "file=@/ruta/imagen.png" \
+      -F "fill_holes_in_breast=true" \
+      -F "include_pectoral_mask=false"
+
+
+============================================================
+6. COMANDOS UTILITARIOS DESDE LA RAIZ
+============================================================
+
+  Exportar tags DICOM:
+    python utils/extract_dicoms.py /ruta/dataset /ruta/salida/tags.csv \
+      --include-extensionless \
+      --workers auto
+
+  Convertir DICOM a PNG de 8 bits:
+    python utils/export_dicom_pngs.py /ruta/dataset_dicom /ruta/dataset_png \
+      --include-extensionless \
+      --workers auto
+
+  Visualizar overlays imagen+mascara:
+    python -m image.visualization /ruta/imagenes /ruta/mascaras \
+      --batch-size 8 \
+      --columns 4
+
+
+============================================================
+7. PARAR Y LIMPIAR
+============================================================
+
+  Parar servicios (sin borrar imagenes):
+    docker compose stop
+
+  Parar y eliminar contenedores y red:
+    docker compose down
+
+  Eliminar tambien las imagenes construidas:
+    docker compose down --rmi local
+
+
+============================================================
+8. PROBLEMAS FRECUENTES
+============================================================
+
+- Dataset no encontrado en el notebook:
+    Comprueba que ~/Escritorio/Datasets/ existe y que DEFAULT_DATASET_DIR
+    apunta a la subcarpeta correcta dentro de /workspace/Data/
+
+- CUDA no disponible:
+    Cambia DEVICE = 'cpu' en la celda de configuracion del notebook,
+    o YOLOX_DEVICE=cpu en docker-compose.yml para la API.
+
+- Puerto ya en uso:
+  docker compose down  y vuelve a ejecutar  docker compose up -d --force-recreate
+
+- Token de Jupyter ha cambiado:
+    docker logs preprocessing-notebook 2>&1 | grep 'token='
+
+- Reconstruir dependencias tras cambios en requirements:
+    docker compose build <servicio>   # notebook | yolox-api | maseg-api
+  docker compose up -d --force-recreate <servicio>

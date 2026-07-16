@@ -11,6 +11,6 @@ Scripts CLI para tareas de entrada/salida sobre datasets DICOM.
 ## Uso rapido
 
 ```bash
-python io/extract_dicoms.py /ruta/dataset /ruta/salida.csv --include-extensionless
-python io/export_dicom_pngs.py /ruta/dataset /ruta/salida_png --workers auto
+python utils/extract_dicoms.py /ruta/dataset /ruta/salida.csv --include-extensionless
+python utils/export_dicom_pngs.py /ruta/dataset /ruta/salida_png --workers auto
 ```

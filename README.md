@@ -1,20 +1,35 @@
 # Preprocessing
 
-Pequena libreria para preprocesado de imagenes de mamografia (DICOM y raster), con utilidades para:
+Libreria para preprocesado de imagenes de mamografia (DICOM y PNG), con utilidades para:
 
+- API estable de carga, extraccion de metadatos y preprocesado (`api_stable`).
 - Resumen y exportacion de metadatos.
 - Exportacion de tags DICOM a CSV.
 - Carga y normalizacion de imagenes.
 - Segmentacion de region mamaria.
 - Construccion de mascaras etiquetadas (mama y pectoral).
-- Flujo especifico para CSAWS.
 
-## Indice del proyecto
-
-### Estructura
+## Estructura del proyecto
 
 ```text
 Preprocessing/
+├── api_stable/                  ← API estable de mamografia (ver api_stable/README.md)
+│   ├── mammography.py
+│   ├── models/
+│   ├── extractors/
+│   ├── metadata/
+│   └── processing/
+├── tests/                       ← Suite pytest automática (ver tests/README.md)
+│   ├── conftest.py
+│   ├── test_processing.py
+│   ├── test_models.py
+│   ├── test_metadata.py
+│   └── test_mammography.py
+├── test_api/                    ← Notebooks de prueba interactiva (ver test_api/README.md)
+│   ├── 01_api_smoke_test.ipynb
+│   ├── 02_image_pipeline_test.ipynb
+│   ├── 03_batch_metadata_validation.ipynb
+│   └── 05_From_PNG.ipynb
 ├── image/
 │   ├── apply_windowing.py
 │   ├── calculate_windowing.py
@@ -46,41 +61,36 @@ Preprocessing/
 └── requirement.txt
 ```
 
-### Nuevo esquema (para refactorizar si es necesario)
-```text
-mammography_preprocessing/
-│
-├── io/
-│   ├── dicom_loader.py
-│   ├── image_loader.py
-│
-├── metadata/
-│   ├── patient.py
-│   ├── acquisition.py
-│   ├── manufacturer.py
-│   ├── geometry.py
-│   ├── study.py
-│
-├── image/
-│   ├── photometric.py
-│   ├── windowing.py
-│   ├── normalization.py
-│   ├── resize.py
-│   ├── masking.py
-│
-├── quality/
-│   ├── validation.py
-│   ├── consistency_checks.py
-│
-├── models/
-│   ├── metadata_models.py
-│
-└── pipelines/
-    ├── standard_preprocessing.py
-    ├── vendor_normalization.py
+## api_stable (punto de entrada principal)
+
+API con separación clara por capas para trabajar con mamografías DICOM y PNG.
+Consulta [api_stable/README.md](api_stable/README.md) para detalles completos.
+
+```python
+from api_stable.mammography import MammographyDicom
+
+# Desde DICOM
+mammo = MammographyDicom.from_dicom("archivo.dcm")
+
+# Desde PNG con preset de fabricante
+mammo = MammographyDicom.from_png("imagen.png", metadata_preset="Hologic")
+
+# Pipeline completo
+mammo.initialize_image().normalize()
+print(mammo.metadata)
+print(mammo.image.get_history())
 ```
 
-### Modulos
+## Tests automáticos
+
+```bash
+python -m pytest tests/ -v
+```
+
+89 tests cubriendo las capas `processing`, `models`, `metadata` y `mammography`.
+Consulta [tests/README.md](tests/README.md) para el detalle completo.
+
+## Módulos legacy
 
 - `image/preprocessing.py`
   - Lectura de metadatos DICOM.

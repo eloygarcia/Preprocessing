@@ -205,3 +205,74 @@ class TestCopy:
         m = MammographyDicom.from_numpy(gray_uint8, metadata_preset="Siemens")
         c = m.copy()
         assert c.metadata.vendor.manufacturer == "Siemens"
+
+
+# ---------------------------------------------------------------------------
+# DICOM export
+# ---------------------------------------------------------------------------
+
+class TestDicomExport:
+    def test_to_dicom_dataset_has_required_pixel_tags(self, gray_uint8):
+        m = MammographyDicom.from_numpy(gray_uint8, metadata_preset="Hologic")
+        ds = m.to_dicom_dataset()
+
+        assert ds.Rows == gray_uint8.shape[0]
+        assert ds.Columns == gray_uint8.shape[1]
+        assert ds.SamplesPerPixel == 1
+        assert ds.BitsAllocated == 16
+        assert ds.BitsStored >= 1
+        assert ds.HighBit == ds.BitsStored - 1
+        assert ds.PixelRepresentation == 0
+        assert hasattr(ds, "PixelData")
+        assert len(ds.PixelData) > 0
+
+    def test_to_dicom_dataset_writes_metadata_fields(self, gray_uint8):
+        m = MammographyDicom.from_numpy(
+            gray_uint8,
+            metadata_defaults={
+                "patient": {"patient_id": "P001", "age": None, "sex": "F"},
+                "vendor": {"manufacturer": "TEST_MFR", "model_name": "TEST_MODEL"},
+                "breast": {"laterality": "R", "view": "CC", "breast_implant_present": None},
+            },
+        )
+        ds = m.to_dicom_dataset()
+
+        assert ds.PatientID == "P001"
+        assert ds.PatientSex == "F"
+        assert ds.Manufacturer == "TEST_MFR"
+        assert ds.ManufacturerModelName == "TEST_MODEL"
+        assert ds.ImageLaterality == "R"
+        assert ds.ViewPosition == "CC"
+
+    def test_to_dicom_dataset_from_float_array(self):
+        arr = np.linspace(0.0, 1.0, 64 * 64, dtype=np.float32).reshape(64, 64)
+        m = MammographyDicom.from_numpy(arr)
+        ds = m.to_dicom_dataset()
+
+        assert ds.BitsAllocated == 16
+        assert ds.Rows == 64
+        assert ds.Columns == 64
+
+    def test_save_as_dicom_creates_file(self, gray_uint8, tmp_path):
+        m = MammographyDicom.from_numpy(gray_uint8, metadata_preset="GE")
+        output = tmp_path / "exported.dcm"
+
+        saved_path = m.save_as_dicom(output)
+        assert saved_path.exists()
+
+    def test_saved_dicom_can_be_read(self, gray_uint8, tmp_path):
+        m = MammographyDicom.from_numpy(gray_uint8, metadata_preset="Hologic")
+        output = tmp_path / "roundtrip.dcm"
+        m.save_as_dicom(output)
+
+        import pydicom
+        ds = pydicom.dcmread(output)
+        assert ds.Rows == gray_uint8.shape[0]
+        assert ds.Columns == gray_uint8.shape[1]
+        assert ds.PhotometricInterpretation in {"MONOCHROME1", "MONOCHROME2"}
+
+    def test_generate_new_uids_changes_sop_instance_uid(self, gray_uint8):
+        m = MammographyDicom.from_numpy(gray_uint8)
+        ds1 = m.to_dicom_dataset(generate_new_uids=True)
+        ds2 = m.to_dicom_dataset(generate_new_uids=True)
+        assert ds1.SOPInstanceUID != ds2.SOPInstanceUID

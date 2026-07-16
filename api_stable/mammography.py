@@ -2,6 +2,13 @@ import pydicom
 import numpy as np
 from pathlib import Path
 from copy import deepcopy
+from pydicom.dataset import Dataset, FileMetaDataset
+from pydicom.uid import (
+    ExplicitVRLittleEndian,
+    SecondaryCaptureImageStorage,
+    generate_uid,
+    PYDICOM_IMPLEMENTATION_UID,
+)
 
 from skimage.io import imread, imsave
 from skimage.color import gray2rgb, rgb2gray
@@ -109,6 +116,114 @@ class MammographyDicom:
         self._ensure_monochrome2()
         self._apply_windowing()
         return self
+
+    @staticmethod
+    def _prepare_pixel_array_for_dicom(pixel_array):
+        """Convert arbitrary 2D numpy arrays to uint16 suitable for DICOM PixelData."""
+        arr = np.asarray(pixel_array)
+        if arr.ndim != 2:
+            raise ValueError("Only 2D grayscale images are supported for DICOM export.")
+
+        if np.issubdtype(arr.dtype, np.floating):
+            arr = np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
+            arr_min = float(arr.min())
+            arr_max = float(arr.max())
+            if arr_max <= arr_min:
+                arr_u16 = np.zeros_like(arr, dtype=np.uint16)
+            else:
+                arr_norm = (arr - arr_min) / (arr_max - arr_min)
+                arr_u16 = np.round(arr_norm * 65535.0).astype(np.uint16)
+        elif np.issubdtype(arr.dtype, np.signedinteger):
+            arr_i64 = arr.astype(np.int64)
+            arr_i64 = arr_i64 - arr_i64.min()
+            arr_u16 = np.clip(arr_i64, 0, 65535).astype(np.uint16)
+        else:
+            arr_u16 = np.clip(arr, 0, 65535).astype(np.uint16)
+
+        max_val = int(arr_u16.max())
+        bits_stored = max(1, max_val.bit_length()) if max_val > 0 else 1
+        bits_stored = min(bits_stored, 16)
+        return arr_u16, bits_stored
+
+    def to_dicom_dataset(self, prefer_original_header=True, generate_new_uids=True):
+        """Build a DICOM Dataset from the current instance image + metadata."""
+        if self._image is None and self.ds is None:
+            raise ValueError("No image available to export. Use from_dicom/from_png/from_numpy first.")
+
+        if prefer_original_header and self.ds is not None:
+            ds = deepcopy(self.ds)
+        else:
+            ds = Dataset()
+
+        pixel_array = self.image.to_numpy() if self._image is not None else self.ds.pixel_array
+        pixel_u16, bits_stored = self._prepare_pixel_array_for_dicom(pixel_array)
+        rows, cols = pixel_u16.shape
+
+        if not hasattr(ds, "file_meta") or ds.file_meta is None:
+            ds.file_meta = FileMetaDataset()
+
+        ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+        ds.file_meta.ImplementationClassUID = PYDICOM_IMPLEMENTATION_UID
+
+        if not getattr(ds, "SOPClassUID", None):
+            ds.SOPClassUID = SecondaryCaptureImageStorage
+
+        if generate_new_uids or not getattr(ds, "SOPInstanceUID", None):
+            ds.SOPInstanceUID = generate_uid()
+
+        ds.file_meta.MediaStorageSOPClassUID = ds.SOPClassUID
+        ds.file_meta.MediaStorageSOPInstanceUID = ds.SOPInstanceUID
+
+        ds.Rows = rows
+        ds.Columns = cols
+        ds.SamplesPerPixel = 1
+        ds.PhotometricInterpretation = (
+            self.metadata.image.photometric_interpretation
+            if self.metadata is not None and self.metadata.image.photometric_interpretation is not None
+            else "MONOCHROME2"
+        )
+        ds.BitsAllocated = 16
+        ds.BitsStored = bits_stored
+        ds.HighBit = bits_stored - 1
+        ds.PixelRepresentation = 0
+        ds.PixelData = pixel_u16.tobytes()
+
+        if self.metadata is not None:
+            if self.metadata.patient.patient_id is not None:
+                ds.PatientID = str(self.metadata.patient.patient_id)
+            if self.metadata.patient.sex is not None:
+                ds.PatientSex = str(self.metadata.patient.sex)
+            if self.metadata.vendor.manufacturer is not None:
+                ds.Manufacturer = str(self.metadata.vendor.manufacturer)
+            if self.metadata.vendor.model_name is not None:
+                ds.ManufacturerModelName = str(self.metadata.vendor.model_name)
+            if self.metadata.breast.laterality is not None:
+                ds.ImageLaterality = str(self.metadata.breast.laterality)
+            if self.metadata.breast.view is not None:
+                ds.ViewPosition = str(self.metadata.breast.view)
+            if self.metadata.image.window_center is not None:
+                ds.WindowCenter = float(self.metadata.image.window_center)
+            if self.metadata.image.window_width is not None:
+                ds.WindowWidth = max(float(self.metadata.image.window_width), 1.0)
+            if self.metadata.image.voi_lut_function is not None:
+                ds.VOILUTFunction = str(self.metadata.image.voi_lut_function)
+
+        if not getattr(ds, "Modality", None):
+            ds.Modality = "MG"
+
+        return ds
+
+    def save_as_dicom(self, output_path, prefer_original_header=True, generate_new_uids=True):
+        """Export current instance as a DICOM file and return output path."""
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        ds = self.to_dicom_dataset(
+            prefer_original_header=prefer_original_header,
+            generate_new_uids=generate_new_uids,
+        )
+        ds.save_as(str(output_path), enforce_file_format=True)
+        return output_path
 
     @classmethod
     def from_dicom(cls, path):

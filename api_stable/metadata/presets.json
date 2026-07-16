@@ -1,0 +1,88 @@
+{
+  "Hologic": {
+    "vendor": {
+      "manufacturer": "HOLOGIC, Inc.",
+      "model_name": "Selenia Dimensions"
+    },
+    "image": {
+      "pixel_spacing": [0.07, 0.07],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "LINEAR"
+    }
+  },
+  "GE": {
+    "vendor": {
+      "manufacturer": "GE Healthcare",
+      "model_name": "Senographe Pristina"
+    },
+    "image": {
+      "pixel_spacing": [0.1, 0.1],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "SIGMOID"
+    }
+  },
+  "Siemens": {
+    "vendor": {
+      "manufacturer": "Siemens",
+      "model_name": "Mammomat Inspiration"
+    },
+    "image": {
+      "pixel_spacing": [0.085, 0.085],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "LINEAR"
+    }
+  },
+  "FUJI": {
+    "vendor": {
+      "manufacturer": "FUJIFILM Corporation",
+      "model_name": "Clearview Csm"
+    },
+    "image": {
+      "pixel_spacing": [0.1, 0.1],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "LINEAR"
+    }
+  },
+  "IMS": {
+    "vendor": {
+      "manufacturer": "IMS GIOTTO",
+      "model_name": "IMS GIOTTO CLASS"
+    },
+    "image": {
+      "pixel_spacing": [0.08, 0.08],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "LINEAR"
+    }
+  },
+  "LORAD": {
+    "vendor": {
+      "manufacturer": "Lorad, A Hologic Company",
+      "model_name": "DSM"
+    },
+    "image": {
+      "pixel_spacing": [0.024, 0.024],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "LINEAR"
+    }
+  },
+  "PLANMED": {
+    "vendor": {
+      "manufacturer": "Planmed",
+      "model_name": "Nuance"
+    },
+    "image": {
+      "pixel_spacing": [0.085, 0.085],
+      "photometric_interpretation": "MONOCHROME2",
+      "presentation_lut_shape": "IDENTITY",
+      "voi_lut_function": "LINEAR"
+    }
+  }
+}
+
+

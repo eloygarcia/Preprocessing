@@ -3,7 +3,7 @@ from .utils import find_dicom_images
 __all__ = ["find_dicom_images"]
 
 try:
-    from .yolox_interface import YOLOXNotebookInterface
+    from ..common_tasks.wrappers.yolox.yolox_interface import YOLOXNotebookInterface
     __all__.append("YOLOXNotebookInterface")
 except Exception:
     pass

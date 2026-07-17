@@ -278,6 +278,12 @@ python -m image.visualization /base/imagenes /base/mascaras --pairs-csv /ruta/pa
 - Consulta `usage.txt` para un flujo completo de trabajo con Docker y notebooks.
 - Incluye pasos para integrar `MyYoloX` y ejecutar inferencia desde notebooks con `utils.yolox_interface.YOLOXNotebookInterface`.
 
+## Flujo recomendado actual
+
+- Usar `api_stable.mammography.MammographyDicom` como entrada principal para carga y preprocesado de imagenes.
+- Usar `notebooks_api/` para notebooks nuevos de validacion funcional.
+- Para pruebas de servicios YOLOX/MAseg, usar `notebooks_api/06_services_yolox_breastsegmentation.ipynb`.
+
 ## Docker y servicios de inferencia
 
 El proyecto soporta dos formas principales de ejecucion:
@@ -324,7 +330,7 @@ Para estandarizar inferencia de modelos por tarea, los wrappers se ubican en:
 
 Wrappers actuales:
 
-- Deteccion YOLOX para uso en notebook: `utils/yolox_interface.py`
+- Deteccion YOLOX para uso en notebook: `common_tasks/wrappers/yolox_interface.py`
 - Segmentacion MAseg: `common_tasks/wrappers/segmentation/maseg_wrapper.py`
 
 ## Notas de rutas

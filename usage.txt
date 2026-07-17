@@ -21,7 +21,7 @@ Después abre:  http://127.0.0.1:8888  (el token lo ves en la sección 4)
 - Datasets locales en:  ~/Escritorio/Datasets/
   Estructura esperada:
     ~/Escritorio/Datasets/
-    ├── INbreast/AllDICOMs/       <- usado en notebook 05
+    ├── INbreast/AllDICOMs/       <- usado en notebooks_api/06
     └── Mammo-MX/B1/              <- alternativa
 - Repositorio clonado en:  ~/Escritorio/WorkInProgress/Preprocessing/
 
@@ -33,16 +33,14 @@ Después abre:  http://127.0.0.1:8888  (el token lo ves en la sección 4)
   Preprocessing/
   ├── docker-compose.yml             <- define los 3 servicios
   ├── docker/
-  │   └── Dockerfile.services        <- imagen base + stages por servicio
-  ├── notebooks/
-  │   └── 05_yolox_inference_demo.ipynb  <- notebook de prueba completo
-  ├── image/
-  │   ├── preprocessing.py           <- utilidades DICOM, metadatos y mascaras
-  │   └── visualization.py           <- visualizacion DICOM y overlays
+  │   └── Dockerfile.services        <- imagen base + runtimes + servicios
+  ├── notebooks_api/
+  │   └── 06_services_yolox_breastsegmentation.ipynb <- prueba de servicios
+  ├── api_stable/
+  │   └── mammography.py              <- MammographyDicom (flujo principal)
   ├── utils/
   │   ├── extract_dicoms.py           <- CLI para exportar tags DICOM
-  │   ├── export_dicom_pngs.py        <- CLI para convertir DICOM a PNG
-  │   └── yolox_interface.py          <- wrapper YOLOX para notebooks
+  │   └── export_dicom_pngs.py        <- CLI para convertir DICOM a PNG
   ├── common_tasks/
   │   ├── wrappers/segmentation/
   │   │   └── maseg_wrapper.py       <- wrapper MAseg para notebooks
@@ -82,6 +80,15 @@ Desde fuera del contenedor, estan en ~/Escritorio/Datasets/...
     docker compose build maseg-api
     docker compose build notebook
 
+  Arquitectura de stages en docker/Dockerfile.services:
+    - base          -> librerias comunes del proyecto (requirements.txt)
+    - yolox_runtime -> base + extras de MyYoloX
+    - maseg_runtime -> base + extras de MAseg
+    - notebook_runtime -> base + extras de MyYoloX y MAseg para notebooks
+    - yolox_api     -> deriva de yolox_runtime
+    - maseg_api     -> deriva de maseg_runtime
+    - notebook      -> deriva de notebook_runtime
+
 -- Paso 2: levantar servicios en background --
 
   docker compose up -d --force-recreate
@@ -101,17 +108,16 @@ Desde fuera del contenedor, estan en ~/Escritorio/Datasets/...
 
 -- Paso 5: conectar VS Code al kernel del contenedor --
 
-  1. Abre notebooks/05_yolox_inference_demo.ipynb
+  1. Abre notebooks_api/06_services_yolox_breastsegmentation.ipynb
   2. Selector de kernel -> "Existing Jupyter Server"
   3. Pega la URL con token del paso 4
 
 -- Paso 6: ejecutar el notebook de prueba --
 
-  notebooks/05_yolox_inference_demo.ipynb
+  notebooks_api/06_services_yolox_breastsegmentation.ipynb
   Ejecuta celdas en orden:
-    Celdas 1-9   -> carga DICOM, preprocesado, inferencia YOLOX directa
-    Celdas 10-13 -> segmentacion MAseg
-    Celdas 14-17 -> prueba via API HTTP (yolox-api y maseg-api)
+    Celdas 1-4 -> carga DICOM y preprocesado con api_stable.MammographyDicom
+    Celdas 5-7 -> health checks + inferencia via API HTTP (YOLOX y MAseg)
 
 
 ============================================================
@@ -180,12 +186,11 @@ Desde fuera del contenedor, estan en ~/Escritorio/Datasets/...
 ============================================================
 
 - Dataset no encontrado en el notebook:
-    Comprueba que ~/Escritorio/Datasets/ existe y que DEFAULT_DATASET_DIR
-    apunta a la subcarpeta correcta dentro de /workspace/Data/
+  Comprueba que ~/Escritorio/Datasets/ existe y que DICOM_PATH
+  apunta a un archivo valido dentro de /workspace/Data/
 
 - CUDA no disponible:
-    Cambia DEVICE = 'cpu' en la celda de configuracion del notebook,
-    o YOLOX_DEVICE=cpu en docker-compose.yml para la API.
+  Ajusta YOLOX_DEVICE=cpu en docker-compose.yml para la API.
 
 - Puerto ya en uso:
   docker compose down  y vuelve a ejecutar  docker compose up -d --force-recreate

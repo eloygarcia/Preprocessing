@@ -19,11 +19,11 @@ def _to_bool(value: str, default: bool = False) -> bool:
 
 MASEG_ROOT = os.environ.get(
     "MASEG_ROOT",
-    "/workspace/common_tasks/segmentation/BreastSegmentationUnet/maseg",
+    "/workspace/BreastSegmentationUnet/maseg",
 )
 MASEG_WEIGHTS = os.environ.get(
     "MASEG_WEIGHTS",
-    "/workspace/common_tasks/segmentation/BreastSegmentationUnet/maseg/weights/segmentation_weights.ckpt",
+    "/workspace/BreastSegmentationUnet/maseg/weights/segmentation_weights.ckpt",
 )
 
 app = FastAPI(title="MAseg Inference API", version="0.1.0")

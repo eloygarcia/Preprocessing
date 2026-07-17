@@ -58,6 +58,8 @@ services:
       - "8002:8002"
     environment:
       - PYTHONPATH=/workspace
-      - MASEG_ROOT=/workspace/common_tasks/segmentation/BreastSegmentationUnet/maseg
-      - MASEG_WEIGHTS=/workspace/common_tasks/segmentation/BreastSegmentationUnet/maseg/weights/segmentation_weights.ckpt
+      - MASEG_ROOT=/workspace/BreastSegmentationUnet/maseg
+      - MASEG_WEIGHTS=/workspace/BreastSegmentationUnet/maseg/weights/segmentation_weights.ckpt
+      - MASEG_DEVICE=gpu
+    gpus: all
 

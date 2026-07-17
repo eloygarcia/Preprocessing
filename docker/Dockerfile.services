@@ -35,32 +35,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirement.txt /tmp/requirement.txt
+COPY requirements.txt /tmp/requirements.txt
 
 RUN python3 -m venv "$VIRTUAL_ENV" && \
     python3 -m pip install --upgrade pip setuptools wheel && \
-    grep -vE '^\s*gdcm\s*([><=].*)?$' /tmp/requirement.txt > /tmp/requirements.docker.txt && \
-    pip install -r /tmp/requirements.docker.txt
+    grep -vE '^\s*gdcm\s*([><=].*)?$' /tmp/requirements.txt > /tmp/requirements.docker.txt && \
+    pip install -r /tmp/requirements.docker.txt && \
+    pip install fastapi "uvicorn[standard]" python-multipart requests
 
-FROM base AS notebook
+FROM base AS yolox_runtime
 COPY . /workspace
-RUN pip install -r /workspace/MyYoloX/requirements.txt && \
+RUN pip install -r /workspace/MyYoloX/myyolox_api/requirements.txt && \
+    pip install --no-build-isolation -e /workspace/MyYoloX
+
+FROM base AS maseg_runtime
+COPY . /workspace
+RUN grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/BreastSegmentationUnet/breastSegmentation_api/requirements.txt > /tmp/maseg.requirements.docker.txt && \
+    pip install -r /tmp/maseg.requirements.docker.txt && \
+    pip install SimpleITK
+
+FROM base AS notebook_runtime
+COPY . /workspace
+RUN pip install -r /workspace/MyYoloX/myyolox_api/requirements.txt && \
     pip install --no-build-isolation -e /workspace/MyYoloX && \
-    pip install SimpleITK requests && \
-    grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/common_tasks/segmentation/BreastSegmentationUnet/requirements.txt > /tmp/maseg.notebook.requirements.txt && \
+    grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/BreastSegmentationUnet/breastSegmentation_api/requirements.txt > /tmp/maseg.notebook.requirements.txt && \
     pip install -r /tmp/maseg.notebook.requirements.txt
+
+FROM notebook_runtime AS notebook
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
 
-FROM base AS yolox_api
-COPY . /workspace
-RUN pip install fastapi "uvicorn[standard]" python-multipart && \
-    pip install -r /workspace/MyYoloX/requirements.txt && \
-    pip install --no-build-isolation -e /workspace/MyYoloX
+FROM yolox_runtime AS yolox_api
 CMD ["uvicorn", "common_tasks.serve.yolox_api:app", "--host", "0.0.0.0", "--port", "8001"]
 
-FROM base AS maseg_api
-COPY . /workspace
-RUN pip install fastapi "uvicorn[standard]" python-multipart SimpleITK && \
-    grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/common_tasks/segmentation/BreastSegmentationUnet/requirements.txt > /tmp/maseg.requirements.docker.txt && \
-    pip install -r /tmp/maseg.requirements.docker.txt
+FROM maseg_runtime AS maseg_api
 CMD ["uvicorn", "common_tasks.serve.maseg_api:app", "--host", "0.0.0.0", "--port", "8002"]

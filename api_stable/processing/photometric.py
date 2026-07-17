@@ -39,7 +39,7 @@ def ensure_monochrome2(
 """
 
 def calculate_windowing(image: np.ndarray, 
-                       method: str = 'breast_tissue',
+                       method: str = 'full_range',
                        exclude_background: bool = True) -> Tuple[int, int]:
     """
     Calculate optimal window center and width from image histogram.
@@ -62,12 +62,17 @@ def calculate_windowing(image: np.ndarray,
     """
     # Filter background if requested
     if exclude_background:
-        tissue_pixels = image[image > 0]
+        image = image.astype(np.float32)
+        tissue_pixels = image[(image > 0.05*image.max()) & (image < (0.95 * image.max()))]
         if len(tissue_pixels) == 0:
             raise ValueError("No non-zero pixels found in image")
     else:
         tissue_pixels = image.flatten()
     
+    min_val = tissue_pixels.min()
+    max_val = tissue_pixels.max()
+    print(min_val, max_val)
+
     # Calculate based on method
     if method == 'percentile_1_99':
         p1, p99 = np.percentile(tissue_pixels, [1, 99])
@@ -106,8 +111,10 @@ def calculate_windowing(image: np.ndarray,
     elif method == 'full_range':
         min_val = np.min(tissue_pixels)
         max_val = np.max(tissue_pixels)
-        center = (min_val + max_val) / 2
-        width = max_val - min_val
+        center = 0.57 * (min_val + max_val) 
+        #width = max_val - min_val
+        width = (max_val - center)/1.5  # Adjusted to focus on upper range for better contrast
+        print(center, width)
         
     elif method == 'histogram_peak':
         # Calculate histogram

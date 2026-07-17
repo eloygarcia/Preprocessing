@@ -33,6 +33,16 @@ Cubre los tres modos de metadata:
 Muestra también cómo la metadata de imagen se actualiza automáticamente tras
 llamar a `initialize_image()`.
 
+### 06 - Services Integration: YOLOX + BreastSegmentation (`06_services_yolox_breastsegmentation.ipynb`)
+Notebook de integración para probar los servicios Docker (`yolox-api` y `maseg-api`)
+usando como entrada una imagen preprocesada con `api_stable.MammographyDicom`.
+
+Incluye:
+- Carga DICOM con `MammographyDicom.from_dicom`.
+- Pipeline `initialize_image().normalize()`.
+- Conversión a PNG en memoria para envío por HTTP.
+- Health checks e inferencia contra ambos endpoints `/infer`.
+
 ## Requisitos
 
 ```bash

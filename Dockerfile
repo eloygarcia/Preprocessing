@@ -54,8 +54,8 @@ COPY . /workspace
 #		pip install -e /workspace/MyYoloX; \
 #	fi
 
-# RUN if [ "$INSTALL_MASEG" = "1" ] && [ -d "/workspace/common_tasks/segmentation/BreastSegmentationUnet" ]; then \
-#		grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/common_tasks/segmentation/BreastSegmentationUnet/requirements.txt > /tmp/maseg.requirements.docker.txt && \
+# RUN if [ "$INSTALL_MASEG" = "1" ] && [ -d "/workspace/BreastSegmentationUnet" ]; then \
+#		grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/BreastSegmentationUnet/requirements.txt > /tmp/maseg.requirements.docker.txt && \
 #		pip install -r /tmp/maseg.requirements.docker.txt && \
 #		pip install SimpleITK; \
 #	fi

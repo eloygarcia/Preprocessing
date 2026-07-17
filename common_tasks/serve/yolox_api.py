@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
-from utils.yolox_interface import YOLOXNotebookInterface
+from common_tasks.wrappers.yolox.yolox_interface import YOLOXNotebookInterface
 
 
 def _to_bool(value: str, default: bool = False) -> bool:

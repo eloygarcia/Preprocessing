@@ -1,0 +1,38 @@
+# Requirements for base 
+
+## Common packages: 
+### python
+tqdm
+numpy
+matplotlib
+
+### Image formats
+gdcm>=3.0.10
+pylibjpeg>=2.0
+pylibjpeg-libjpeg>=2.1
+
+### Image
+scikit-image
+pillow
+imageio
+pydicom
+opencv_python
+opencv-python-headless
+
+### Jupyter
+jupyter
+notebook
+ipykernel
+
+### ML / DL
+scipy
+scikit-learn
+
+## WARNING: Comment this lines if you are not doing deep learning
+torch
+torchvision
+tensorboard
+albumentations
+pytorch-lightning
+
+

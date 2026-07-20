@@ -13,6 +13,8 @@ from pydicom.uid import (
 from skimage.io import imread, imsave
 from skimage.color import gray2rgb, rgb2gray
 
+#from api_stable.study import View
+
 try:
     from .metadata.factory import MetadataFactory
     from .models.image import MammographyImage
@@ -45,6 +47,10 @@ class MammographyDicom:
                 pixel_array=self.ds.pixel_array,
             )
         return self._image
+    
+    # @property
+    # def view(self) -> View:
+    #    pass
 
     def _sync_metadata_from_image(self, image_overrides=None):
         if self._image is None:

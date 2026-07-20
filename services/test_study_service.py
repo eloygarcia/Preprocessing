@@ -3,8 +3,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from ..api_stable.mammography import MammographyDicom
-from ..api_stable.study import View
+from api_stable.mammography import MammographyDicom
+from api_stable.study import View
 from services.studyService import StudyService
 
 

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Dict, Iterator, Optional
-from enum import Enum
+from api_stable.models.metadata import View
+from pydicom.misc import is_dicom
 
 try:
     from .mammography import MammographyDicom
@@ -11,13 +12,6 @@ except ImportError:
         from api_stable.mammography import MammographyDicom
     except ImportError:
         from mammography import MammographyDicom
-
-
-class View(Enum):
-    LCC = "LCC"
-    RCC = "RCC"
-    LMLO = "LMLO"
-    RMLO = "RMLO"
 
 
 class MammographyStudy:
@@ -33,24 +27,19 @@ class MammographyStudy:
     def __init__(self, images: Dict[View, MammographyDicom]):
         self._images = images
 
-    # ------------------------------------------------------------------
-    # Constructors
-    # ------------------------------------------------------------------
-
     @classmethod
     def from_folder(cls, folder: str | Path):
         folder = Path(folder)
         images = {}
-        for file in sorted(folder.glob("*.dcm")):
+        list_images = [x for x in sorted(folder.glob("*")) if is_dicom(x)]
+        # list_images = sorted(folder.glob("*.dicom"))
+        print(f"Found {len(list_images)} DICOM files in {folder}")
+        for file in list_images:
             image = MammographyDicom.from_dicom(file)
             view = cls._detect_view(image)
             if view is not None:
                 images[view] = image
         return cls(images)
-
-    # ------------------------------------------------------------------
-    # Private methods
-    # ------------------------------------------------------------------
 
     @staticmethod
     def _detect_view(image: MammographyDicom) -> Optional[View]:
@@ -82,10 +71,6 @@ class MammographyStudy:
             return View[f"{laterality}{projection}"]
 
         return None
-
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
 
     @property
     def images(self):
@@ -119,10 +104,6 @@ class MammographyStudy:
     def missing_views(self):
         return [v for v in View if v not in self._images]
 
-    # ------------------------------------------------------------------
-    # Metadata
-    # ------------------------------------------------------------------
-
     @property
     def patient_name(self):
         if not self._images:
@@ -141,10 +122,6 @@ class MammographyStudy:
             return None
         return next(iter(self._images.values())).study_uid
 
-    # ------------------------------------------------------------------
-    # Iteration
-    # ------------------------------------------------------------------
-
     def __len__(self):
         return len(self._images)
 
@@ -159,19 +136,11 @@ class MammographyStudy:
             key = View[key.strip().upper()]
         return self._images[key]
 
-    # ------------------------------------------------------------------
-    # Validation
-    # ------------------------------------------------------------------
-
     def validate(self):
         if not self.is_complete:
             raise ValueError(
                 f"Study incomplete. Missing: {self.missing_views}"
             )
-
-    # ------------------------------------------------------------------
-    # Representation
-    # ------------------------------------------------------------------
 
     def __repr__(self):
         views = ", ".join(v.name for v in self._images.keys())
@@ -182,6 +151,7 @@ class MammographyStudy:
         )
     
 if __name__ == "__main__":
-    study = MammographyStudy.from_folder("path/to/study/folder")
+    study_folder = "/home/eloygarcia/Escritorio/Datasets/vinDr/physionet.org/files/vindr-mammo/1.0.0/images/004426a40da27ef22a866538b772ac44/"
+    study = MammographyStudy.from_folder("study_folder")
     print(study)
     

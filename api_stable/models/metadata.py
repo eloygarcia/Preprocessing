@@ -1,5 +1,12 @@
 import numpy as np
+from enum import Enum
 from dataclasses import dataclass
+
+class View(Enum):
+    LCC = "LCC"
+    RCC = "RCC"
+    LMLO = "LMLO"
+    RMLO = "RMLO"
 
 @dataclass
 class PatientInfo:

@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List
+from pydicom.misc import is_dicom
 
 try:
     from api_stable.study import MammographyStudy
@@ -28,8 +29,8 @@ class StudyService:
         for folder in root.rglob("*"):
             if not folder.is_dir():
                 continue
-
-            if list(folder.glob("*.dcm")):
+            list_images = [x for x in list(folder.glob("*")) if is_dicom(x)]
+            if list_images:
                 try:
                     studies.append(
                         MammographyStudy.from_folder(folder)

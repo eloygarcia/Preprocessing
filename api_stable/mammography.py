@@ -13,7 +13,7 @@ from pydicom.uid import (
 from skimage.io import imread, imsave
 from skimage.color import gray2rgb, rgb2gray
 
-#from api_stable.study import View
+from api_stable.models.metadata import View
 
 try:
     from .metadata.factory import MetadataFactory
@@ -48,9 +48,14 @@ class MammographyDicom:
             )
         return self._image
     
-    # @property
-    # def view(self) -> View:
-    #    pass
+    
+    @property
+    def view(self) -> View:
+        laterality = self.metadata.breast.laterality
+        projection = self.metadata.breast.view
+        return f"{laterality}{projection}"
+        # return projection
+    
 
     def _sync_metadata_from_image(self, image_overrides=None):
         if self._image is None:

@@ -340,3 +340,10 @@ Wrappers actuales:
 - Dar a cada servicio su stage/imagen en `docker/Dockerfile.services`.
 - Montar codigo y pesos como volumenes (`/workspace`) para iterar rapido.
 - Reconstruir solo el servicio afectado cuando cambian dependencias.
+
+
+## TODO
+
+- A partir de Mammography study (local repository, study service...) no está validado nada. 
+- Me pregunto si entre mammography y study debería haber una clase breast
+- Más adelante incluiremos clase ptient, compuesta por mútiples estudios

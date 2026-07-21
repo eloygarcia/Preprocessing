@@ -7,6 +7,17 @@ try:
 except ImportError:
     from ..api_stable.study import MammographyStudy
 
+"""
+Hace operaciones relacionadas con los estudios.
+
+Por ejemplo:
+
+study = study_service.get(uid)
+study_service.validate(study)
+study_service.export(...)
+
+Si mañana añades caché o permisos de usuario, irán aquí.
+"""
 
 # class StudyService:
 #     """

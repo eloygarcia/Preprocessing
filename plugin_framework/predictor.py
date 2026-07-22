@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
-
+import os
+import json
 import torch
-
+from abc import ABC, abstractmethod
 
 class Predictor(ABC):
     """
@@ -15,46 +15,22 @@ class Predictor(ABC):
     - Performing postprocessing
     """
 
-    def __init__(self):
-        self.device = self._select_device()
-        self.model = self.load_model()
-        self.model.to(self.device)
-        self.model.eval()
-        self._warmup()
-
-    @torch.no_grad()
-    def predict(self, data):
-        x = self.preprocess(data)
-        x = x.to(self.device)
-        y = self.model(x)
-        result = self.postprocess(y)
-        return result
-
+    def __init__(self, metadata_path):
+        with open(metadata_path, "r") as f:
+            self.metadata = json.load(f)
+        
     def _select_device(self):
-        if torch.cuda.is_available():
-            return torch.device("cuda")
-        return torch.device("cpu")
+        pass
 
     def _warmup(self):
-        pass
-
-    @abstractmethod
-    def load_model(self):
-        pass
-
-    @abstractmethod
-    def preprocess(self, data):
-        pass
-
-    @abstractmethod
-    def postprocess(self, prediction):
         pass
 
     def health(self):
         return {"status": "ok"} 
 
     def metadata(self):
-        return {
-            "name": self.__class__.__name__,
-            "description": self.__doc__,
-        }
+        pass
+    
+    @torch.no_grad()
+    def predict(self, data):
+       pass

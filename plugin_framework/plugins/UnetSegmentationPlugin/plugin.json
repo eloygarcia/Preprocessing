@@ -1,0 +1,12 @@
+{
+    "name": "Breast Segmentation",
+    "version": "1.0",
+    "author": "Based on Radboud University Medical Center's work",
+
+    "entry_point": "plugin.UnetSegmentationPlugin",
+    "module": "plugins.breast_segmentation.plugin",
+    "class": "UnetSegmentationPlugin",
+    "task": "segmentation",
+
+    "docker_port": 8004
+}

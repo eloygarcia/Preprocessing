@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,8 +6,8 @@ import torchvision
 
 from predictor import Predictor
 # from src.MultiModels import make_efficientnet_b0, make_resnet50
-from preprocessing import Preprocessing
-#from postprocessing import Postprocessing
+# from preprocessing import Preprocessing
+# from postprocessing import Postprocessing
 
 
 class Model(nn.Module):
@@ -14,7 +15,9 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.num_classes = 2
         #self.model_weight_path = './weights/best_model_resnet50_ft_full_1024.pth'
-        self.model_weight_path = './weights/best_model_efficientnetb0_full_1024_RSNA_OMIDB_crop.pth'
+        
+        weights_dir = os.path.dirname(os.path.realpath(__file__))
+        self.model_weight_path = weights_dir + '/weights/best_model_efficientnetb0_full_1024_RSNA_OMIDB_crop.pth'
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.model = self.load_model()

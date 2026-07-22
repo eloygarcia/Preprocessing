@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from predictor import Predictor
 
 app = FastAPI()
+predictor = Predictor()
 
 @app.get("/health")
 def health():
@@ -16,17 +17,3 @@ def metadata():
 @app.post("/predict")
 def predict(request):
     return Predictor().predict(request)
-
-"""
-# app.py
-
-plugins = PluginManager()
-
-plugins.load("lesion_detector")
-
-plugin = plugins.get("lesion_detector")
-
-result = plugin.analyse(image)
-
-viewer.display(result)
-"""

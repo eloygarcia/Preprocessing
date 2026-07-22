@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,11 +6,11 @@ import torchvision
 
 from predictor import Predictor
 # from src.MultiModels import make_efficientnet_b0, make_resnet50
-from preprocessing import Preprocessing
-#from postprocessing import Postprocessing
+# from .preprocessing import Preprocessing
+# from postprocessing import Postprocessing
 
-from run_model import RunModel
-from unet import Unet
+# from run_model import RunModel
+from .unet import Unet
 
 import pickle
 from functools import partial
@@ -18,8 +19,10 @@ class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
         self.num_classes = 2
-        
-        self.model_weight_path = './weights/segmentation_weights.ckpt'
+
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        print(dir_path)
+        self.model_weight_path = dir_path+'/weights/segmentation_weights.ckpt'
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.model = self.load_model()

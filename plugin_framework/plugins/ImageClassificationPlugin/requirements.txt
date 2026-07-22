@@ -3,23 +3,23 @@
 # matplotlib
 # scikit-image
 
-jupyter
-notebook
-ipykernel
+# jupyter
+# notebook
+# ipykernel
 
-scikit-learn
+# scikit-learn
 pandas
-opencv-python
+# opencv-python
 
-shapely
+# shapely
 
 # torch
 # torchvision
-tensorboard
-pytorch-lightning
+# tensorboard
+# pytorch-lightning
 
 # captum
 
-shap
-lime
+# shap
+# lime
 # omnixai ## Cuidado con este

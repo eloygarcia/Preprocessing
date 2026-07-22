@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 @dataclass
 class AnalysisResult:
-
     overlays: list
     tables: list
     measurements: list

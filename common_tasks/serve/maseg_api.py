@@ -10,7 +10,6 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from common_tasks.wrappers.segmentation import MAsegPectoralSegmentationInterface
 
-
 def _to_bool(value: str, default: bool = False) -> bool:
     if value is None:
         return default

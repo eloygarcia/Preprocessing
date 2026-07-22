@@ -1,0 +1,9 @@
+docker run --gpus all --ipc=host -v /home/eloygarcia/Escritorio/Synthetic_Patient/Mammo_Class:/home/code -v /home/eloygarcia/Escritorio/Synthetic_Patient/:/home/data -ti mammographyclassifiation:v1
+
+## Check the code to change the number of classes acording to your requirements
+python3 main_class.py --train_lib /home/data/Data/bilateral_subset.csv --val_lib /home/data/Data/bilateral_subset.csv --device cuda --model resnet50 --num_classes 6 --batch_size 4 --num_epochs 100 --workers 1 --lr 0.01
+
+#python3 main_prediction.py --weights_path /home/data/results/efficientnetb3_VinDr/2026-01-28-15\:39\:46/ --test_lib /home/data/Data/bilateral_val.csv --device cuda --model efficientnetb3 --num_classes 6 --batch_size 4
+python3 main_prediction.py --weights_path /home/data/results/resnet50_VinDr/2026-06-26-15\:32\:49/best_model_resnet50_full_1024_VinDr_crop_forth_try.pth --test_lib /home/data/Data/bilateral_val.csv --device cuda --model resnet50 --num_classes 6 --batch_size 4 --pretrained --threshold 0.3
+
+

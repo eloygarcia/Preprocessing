@@ -1,0 +1,25 @@
+# TODO: Update with exact module version
+# numpy
+# matplotlib
+# scikit-image
+
+jupyter
+notebook
+ipykernel
+
+scikit-learn
+pandas
+opencv-python
+
+shapely
+
+# torch
+# torchvision
+tensorboard
+pytorch-lightning
+
+# captum
+
+shap
+lime
+# omnixai ## Cuidado con este

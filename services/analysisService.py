@@ -39,7 +39,6 @@ AnalysisService
 """
 
 
-
 in_docker = Path('/.dockerenv').exists()
 
 # v.2
@@ -57,6 +56,7 @@ class LesionDetector(AnalysisPlugin):
             files={"image": image}
         )
         return AnalysisResult.from_json(response.json())
+
 # v.1
 class Analysis(ABC):
     @property

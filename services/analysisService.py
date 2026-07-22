@@ -8,6 +8,10 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 from services.adapters.yolo_adapter import YoloAdapter
 
+from services.metadata.metadata import (
+    AnalysisResult,
+)   
+
 """
 AnalysisService
 Este servicio NO ejecuta un pipeline completo.
@@ -38,6 +42,22 @@ AnalysisService
 
 in_docker = Path('/.dockerenv').exists()
 
+# v.2
+class AnalysisPlugin(ABC):
+    @abstractmethod
+    def analyse(self, image):
+        pass
+
+import requests
+
+class LesionDetector(AnalysisPlugin):
+    def analyse(self, image):
+        response = requests.post(
+            "http://localhost:8001/analyse",
+            files={"image": image}
+        )
+        return AnalysisResult.from_json(response.json())
+# v.1
 class Analysis(ABC):
     @property
     @abstractmethod

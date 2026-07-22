@@ -4,6 +4,17 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from dataclasses import asdict
 
+## v.2
+from dataclasses import dataclass
+
+@dataclass
+class AnalysisResult:
+
+    overlays: list
+    tables: list
+    measurements: list
+    metadata: dict
+
 ## Base
 @dataclass(slots=True)
 class ModelInfo:

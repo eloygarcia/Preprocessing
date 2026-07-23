@@ -1,22 +1,21 @@
 from fastapi import FastAPI
-from predictor import Predictor
+from predictor import ResNetPredictor
 
 app = FastAPI()
-predictor = Predictor()
+predictor = ResNetPredictor()
 
 @app.get("/health")
 def health():
-    return Predictor().health_check()
-
+    return predictor.health_check()
 
 @app.get("/metadata")
 def metadata():
-    return Predictor().get_metadata()
+    return predictor.get_metadata()
 
 
 @app.post("/predict")
 def predict(request):
-    return Predictor().predict(request)
+    return predictor.predict(request)
 
 """
 # app.py

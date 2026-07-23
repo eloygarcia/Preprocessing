@@ -23,6 +23,3 @@ pandas
 # shap
 # lime
 # omnixai ## Cuidado con este
-
-fastapi
-uvicorn

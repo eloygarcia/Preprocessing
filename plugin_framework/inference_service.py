@@ -7,12 +7,12 @@ class InferenceService:
     def predict(self,
                 algorithm_name,
                 data):
-        algo = self.plugin_manager.get_algorithm(
+        plugin = self.plugin_manager.get_algorithm(
             algorithm_name
         )
-        print(algo)
+        print(plugin)
         response = requests.post(
-            f"{algo['url']}/predict",
+            f"{plugin['url']}/predict",
             json=data
         )
 

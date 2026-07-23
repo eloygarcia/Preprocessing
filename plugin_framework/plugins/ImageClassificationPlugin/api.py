@@ -1,8 +1,13 @@
-from fastapi import FastAPI
+import numpy as np
+from fastapi import FastAPI, Body
 from predictor import ResNetPredictor
+from pydantic import BaseModel
 
 app = FastAPI()
 predictor = ResNetPredictor()
+
+class PredictionRequest(BaseModel):
+    image: list
 
 @app.get("/health")
 def health():
@@ -12,21 +17,20 @@ def health():
 def metadata():
     return predictor.get_metadata()
 
-
 @app.post("/predict")
-def predict(request):
-    return predictor.predict(request)
+def predict(request: dict = Body(...)):
+    image = np.array(
+        request["image"]
+    )
+    print(image.shape)
+    
+    return predictor.predict(image)
+    
+    #return {
+    #    "shape": list(image.shape)
+    #}
 
-"""
-# app.py
+# @app.post("/predict")
+# def predict(request: PredictionRequest):
+#    return predictor.predict(request.image)
 
-plugins = PluginManager()
-
-plugins.load("lesion_detector")
-
-plugin = plugins.get("lesion_detector")
-
-result = plugin.analyse(image)
-
-viewer.display(result)
-"""

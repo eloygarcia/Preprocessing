@@ -1,0 +1,9 @@
+Enriquecer los metadatos
+
+{
+  "name": "Image Classification",
+  "version": "1.0",
+  "task": "classification",
+  "input_type": "image",
+  "output_type": "probability"
+}

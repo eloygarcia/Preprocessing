@@ -71,8 +71,12 @@ class ResNetPredictor(Predictor):
     def get_device(self):
         return self.device
     
-    def health_check(self):
-        return {"status": "ok"}
+   def health_check(self):
+        return {
+            "status": "ok",
+            "model_loaded":True,
+            "device":self.device
+        }
     
     def get_metadata(self):
         return self.metadata

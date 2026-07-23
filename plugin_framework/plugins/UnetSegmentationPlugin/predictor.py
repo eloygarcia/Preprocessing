@@ -71,7 +71,11 @@ class UnetPredictor(Predictor):
         return self.device
     
     def health_check(self):
-        return {"status": "ok"}
+        return {
+            "status": "ok",
+            "model_loaded":True,
+            "device":self.device
+        }
     
     def get_metadata(self):
         return self.metadata

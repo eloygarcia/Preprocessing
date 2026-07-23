@@ -14,7 +14,8 @@ class PluginManager:
         for plugin in self.plugins:
             try:
                 metadata = requests.get(
-                    f"{plugin}/metadata"
+                    f"{plugin}/metadata",
+                    timeout=5
                 ).json()
 
                 self.catalog[
@@ -24,6 +25,7 @@ class PluginManager:
                     "metadata": metadata,
                     "status": "online"
                 }
+                print(f"Plugin descubierto: {metadata['name']}")
             except Exception as e:
                 print(
                     f"Error descubriendo {plugin}: {e}"
@@ -35,7 +37,11 @@ class PluginManager:
                 health = requests.get(
                     f"{plugin['url']}/health"
                 ).json()
-                plugin["status"] = health["status"]
+                if response.status_code == 200:
+                    plugin["status"] = "online"
+                else:
+                    plugin["status"] = "offline"
+                # plugin["status"] = health["status"]
             except Exception:
                 plugin["status"] = "offline"
 

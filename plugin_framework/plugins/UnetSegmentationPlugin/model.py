@@ -4,12 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
-# from predictor import Predictor
-# from src.MultiModels import make_efficientnet_b0, make_resnet50
-# from .preprocessing import Preprocessing
-# from postprocessing import Postprocessing
-
-# from run_model import RunModel
 from .unet import Unet
 
 import pickle

@@ -1,0 +1,12 @@
+{
+    "name": "Image Classification",
+    "version": "1.0",
+    "author": "Based on Karla Sam-Millan's work",
+
+    "entry_point": "plugin.ImageClassificationPlugin",
+    "module": "plugins.imageclassification.plugin",
+    "class": "ImageClassificationPlugin",
+    "task": "classification",
+
+    "docker_port": 8003
+}

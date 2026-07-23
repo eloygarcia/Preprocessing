@@ -25,6 +25,7 @@ notebook
 ipykernel
 
 ### ML / DL
+pandas
 scipy
 scikit-learn
 

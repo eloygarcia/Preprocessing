@@ -112,3 +112,8 @@ dmypy.json
 # Large CSV files (optional - uncomment to ignore generated metadata)
 # *_metadata.csv
 # *_tags.csv
+
+# Ignore pytorch and pytoch-lightning checkpoints (optional - uncomment to ignore generated checkpoints)
+*.ckpt
+*.pth
+*.bak

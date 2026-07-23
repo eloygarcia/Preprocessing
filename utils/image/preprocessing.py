@@ -13,7 +13,7 @@ from scipy import ndimage as ndi
 from skimage.measure import label, regionprops
 from skimage.morphology import closing, disk
 
-from image.apply_windowing import apply_windowing
+from utils.image.apply_windowing import apply_windowing
 
 
 DEFAULT_METADATA_FIELDS = (

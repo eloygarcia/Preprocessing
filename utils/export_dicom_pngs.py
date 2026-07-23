@@ -12,7 +12,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from utils.extract_dicoms import find_dicom_files
-from image.preprocessing import (
+from utils.image.preprocessing import (
     convert_dicom_to_uint8_png, 
     convert_dicom_to_uint16_png,
     get_dicom_png_output_path,

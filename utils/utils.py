@@ -16,7 +16,7 @@ from pydicom.misc import is_dicom
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-from image.visualization import DEFAULT_INBREAST_IMAGES_DIR
+from utils.image.visualization import DEFAULT_INBREAST_IMAGES_DIR
 
 def find_dicom_images(images_dir: str | Path = DEFAULT_INBREAST_IMAGES_DIR,
                       recursive: bool = True,

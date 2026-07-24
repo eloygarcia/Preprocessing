@@ -43,13 +43,13 @@ services:
       - YOLOX_FP16=0
     gpus: all
 
-  maseg-api:
+  unet-plugin:
     build:
       context: .
-      dockerfile: docker/Dockerfile.services
-      target: maseg_api
-    image: preprocessing:maseg-api
-    container_name: preprocessing-maseg-api
+      dockerfile: plugin_framework/plugins/UnetSegmentationPlugin/Dockerfile
+      target: unet_plugin
+    image: preprocessing:unet-plugin
+    container_name: preprocessing-unet-plugin
     working_dir: /workspace
     volumes:
       - ./:/workspace
@@ -58,8 +58,10 @@ services:
       - "8002:8002"
     environment:
       - PYTHONPATH=/workspace
-      - MASEG_ROOT=/workspace/BreastSegmentationUnet/maseg
-      - MASEG_WEIGHTS=/workspace/BreastSegmentationUnet/maseg/weights/segmentation_weights.ckpt
-      - MASEG_DEVICE=gpu
+      - UNET_ROOT=/workspace/UnetSegmentationPlugin
+      - UNET_WEIGHTS=/workspace/UnetSegmentationPlugin/weights/segmentation_weights.ckpt
+      - UNET_DEVICE=gpu
     gpus: all
+    depends_on:
+      - notebook
 

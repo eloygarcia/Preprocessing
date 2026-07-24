@@ -11,14 +11,14 @@
 pandas
 # opencv-python
 
-# shapely
+shapely
 
 # torch
 # torchvision
 # tensorboard
 # pytorch-lightning
 
-# captum
+captum
 
 # shap
 # lime

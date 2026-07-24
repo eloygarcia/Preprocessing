@@ -1,8 +1,6 @@
 FROM nvidia/cuda:13.1.0-runtime-ubuntu24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
-#ARG INSTALL_MYYOLOX=0
-#ARG INSTALL_MASEG=0
 
 ENV TZ=Etc/UTC
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
@@ -39,25 +37,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	zlib1g-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY requirement.txt /tmp/requirement.txt
+COPY requirement.txt /tmp/requirements.txt
 
 RUN python3 -m venv "$VIRTUAL_ENV" && \
 	python3 -m pip install --upgrade pip setuptools wheel && \
-	grep -vE '^\s*gdcm\s*([><=].*)?$' /tmp/requirement.txt > /tmp/requirements.docker.txt && \
+	grep -vE '^\s*gdcm\s*([><=].*)?$' /tmp/requirements.txt > /tmp/requirements.docker.txt && \
 	pip install -r /tmp/requirements.docker.txt && \
 	pip install fastapi "uvicorn[standard]" python-multipart requests
 
 COPY . /workspace
-
-#RUN if [ "$INSTALL_MYYOLOX" = "1" ] && [ -d "/workspace/MyYoloX" ]; then \
-#		pip install -r /workspace/MyYoloX/requirements.txt && \
-#		pip install -e /workspace/MyYoloX; \
-#	fi
-
-# RUN if [ "$INSTALL_MASEG" = "1" ] && [ -d "/workspace/BreastSegmentationUnet" ]; then \
-#		grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/BreastSegmentationUnet/requirements.txt > /tmp/maseg.requirements.docker.txt && \
-#		pip install -r /tmp/maseg.requirements.docker.txt && \
-#		pip install SimpleITK; \
-#	fi
 
 CMD ["bash"]

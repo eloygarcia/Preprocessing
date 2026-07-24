@@ -48,24 +48,14 @@ COPY . /workspace
 RUN pip install -r /workspace/MyYoloX/myyolox_api/requirements.txt && \
     pip install --no-build-isolation -e /workspace/MyYoloX
 
-FROM base AS maseg_runtime
-COPY . /workspace
-RUN grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/BreastSegmentationUnet/breastSegmentation_api/requirements.txt > /tmp/maseg.requirements.docker.txt && \
-    pip install -r /tmp/maseg.requirements.docker.txt && \
-    pip install SimpleITK
-
 FROM base AS notebook_runtime
 COPY . /workspace
 RUN pip install -r /workspace/MyYoloX/myyolox_api/requirements.txt && \
-    pip install --no-build-isolation -e /workspace/MyYoloX && \
-    grep -vE '^\s*gdcm\s*([><=].*)?$' /workspace/BreastSegmentationUnet/breastSegmentation_api/requirements.txt > /tmp/maseg.notebook.requirements.txt && \
-    pip install -r /tmp/maseg.notebook.requirements.txt
+    pip install --no-build-isolation -e /workspace/MyYoloX 
 
 FROM notebook_runtime AS notebook
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
 
 FROM yolox_runtime AS yolox_api
-CMD ["uvicorn", "common_tasks.serve.yolox_api:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "common_tasks.serve.yolox_api:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 
-FROM maseg_runtime AS maseg_api
-CMD ["uvicorn", "common_tasks.serve.maseg_api:app", "--host", "0.0.0.0", "--port", "8002"]

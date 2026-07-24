@@ -43,25 +43,3 @@ services:
       - YOLOX_FP16=0
     gpus: all
 
-  unet-plugin:
-    build:
-      context: .
-      dockerfile: plugin_framework/plugins/UnetSegmentationPlugin/Dockerfile
-      target: unet_plugin
-    image: preprocessing:unet-plugin
-    container_name: preprocessing-unet-plugin
-    working_dir: /workspace
-    volumes:
-      - ./:/workspace
-      - ~/Escritorio/Datasets:/workspace/Data
-    ports:
-      - "8002:8002"
-    environment:
-      - PYTHONPATH=/workspace
-      - UNET_ROOT=/workspace/UnetSegmentationPlugin
-      - UNET_WEIGHTS=/workspace/UnetSegmentationPlugin/weights/segmentation_weights.ckpt
-      - UNET_DEVICE=gpu
-    gpus: all
-    depends_on:
-      - notebook
-

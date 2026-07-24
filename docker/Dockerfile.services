@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/requirements.txt
+COPY ./MyYoloX/myyolox_api/requirements.txt /tmp/myyolox_requirements.txt
 
 RUN python3 -m venv "$VIRTUAL_ENV" && \
     python3 -m pip install --upgrade pip setuptools wheel && \
@@ -45,12 +46,12 @@ RUN python3 -m venv "$VIRTUAL_ENV" && \
 
 FROM base AS yolox_runtime
 COPY . /workspace
-RUN pip install -r /workspace/MyYoloX/myyolox_api/requirements.txt && \
+RUN pip install -r /tmp/myyolox_requirements.txt && \
     pip install --no-build-isolation -e /workspace/MyYoloX
 
 FROM base AS notebook_runtime
 COPY . /workspace
-RUN pip install -r /workspace/MyYoloX/myyolox_api/requirements.txt && \
+RUN pip install -r /tmp/myyolox_requirements.txt && \
     pip install --no-build-isolation -e /workspace/MyYoloX 
 
 FROM notebook_runtime AS notebook

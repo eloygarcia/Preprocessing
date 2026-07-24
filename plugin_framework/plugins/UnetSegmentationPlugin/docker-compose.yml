@@ -1,0 +1,18 @@
+services:
+
+  unet-plugin:
+    image: preprocessing:unet-segmentation
+
+    build:
+      context: .
+
+    container_name: preprocessing-unet-segmentation
+
+    ports:
+      - "8002:8002"
+
+    environment:
+      PYTHONPATH: /plugin
+      UNET_DEVICE: gpu
+
+    gpus: all

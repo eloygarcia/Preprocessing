@@ -1,12 +1,28 @@
 {
-    "name": "Breast Segmentation",
-    "version": "1.0",
-    "author": "Based on Radboud University Medical Center's work",
-
+    "name": "unet-segmentation",
+    "version": "0.1",
+    "date": "2026-07-24",
     "entry_point": "plugin.UnetSegmentationPlugin",
-    "module": "plugins.breast_segmentation.plugin",
+    "module": "plugins.UnetSegmentationPlugin.plugin",
     "class": "UnetSegmentationPlugin",
-    "task": "segmentation",
-
-    "docker_port": 8004
-}
+    "repository":{
+        "github": "https://github.com/radboud-axti/maseg",
+        "weights": "https://github.com/radboud-axti/maseg/segmentation-weights.ckpt",
+        "author": "Based on Radboud University Medical Center's work",
+        "date": "2023"
+    },
+    "info": {
+        "task": "segmentation",
+        "input_type":"image",
+        "output_type":"mask",
+        "local_weights": "./weights/segmentation-weights.ckpt",
+        "description":"Unet for breast area and pectoral muscle segmentation"
+    },
+    "docker":{
+               "image":"preprocessing:unet-segmentation:latest",
+               "container_name":"unet-segmentation",
+               "GPU": "all",
+               "docker_port": "8002"
+           },
+    "comments": "no comments, so far"
+    }

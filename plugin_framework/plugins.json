@@ -1,0 +1,5 @@
+{
+http://resnet-xai:8004,
+http://resnet-classification:8003,
+http://unet-segmentation:8002
+}

@@ -12,12 +12,14 @@ pylibjpeg>=2.0
 pylibjpeg-libjpeg>=2.1
 
 ### Image
+nibabel
 scikit-image
 pillow
 imageio
 pydicom
 opencv_python
 opencv-python-headless
+
 
 ### Jupyter
 jupyter

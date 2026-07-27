@@ -18,8 +18,10 @@ def Preprocessing(image, new_size = (1024, 512)):
     # For example, you can convert the study to a specific format or apply any necessary transformations
 
     # model = 'resnet50'  # Default model
-
+    print(type(image))
+    
     if isinstance(image, np.ndarray):
+        print(image.shape)
         image = Image.fromarray(image)
         
     transform = f_transform_val(new_size=new_size)

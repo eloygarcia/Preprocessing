@@ -74,7 +74,7 @@ class UnetPredictor(Predictor):
         return {
             "status": "ok",
             "model_loaded":True,
-            "device":self.device
+            #"device":self.device
         }
     
     def get_metadata(self):
@@ -82,7 +82,8 @@ class UnetPredictor(Predictor):
     
     @torch.no_grad()
     def predict(self, data):
-        print(self.device)
+        #print(self.device)
+        print('here')
         
         x = self.preprocess(data).to(self.device)    
         y = self.model(x)

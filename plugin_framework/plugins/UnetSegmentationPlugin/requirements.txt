@@ -10,6 +10,7 @@
 # scikit-learn
 pandas
 # opencv-python
+nibabel
 
 # shapely
 

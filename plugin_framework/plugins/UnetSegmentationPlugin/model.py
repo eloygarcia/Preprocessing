@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
-from .unet import Unet
+from unet import Unet
 
 import pickle
 from functools import partial

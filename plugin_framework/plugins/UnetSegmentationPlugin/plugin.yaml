@@ -4,7 +4,6 @@ docker:
   image: preprocessing:unet-segmentation
   base_image: preprocessing:notebook
 
-
 runtime:
   gpu: true
   port: 8002

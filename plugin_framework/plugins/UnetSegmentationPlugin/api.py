@@ -1,5 +1,9 @@
 import numpy as np
+import cv2
+import nibabel as nib
+
 from fastapi import FastAPI, Body
+from fastapi.responses import FileResponse
 from predictor import UnetPredictor
 from pydantic import BaseModel
 
@@ -20,16 +24,32 @@ def metadata():
 @app.post("/predict")
 def predict(request: dict = Body(...)):
     image = np.array(
-        request["image"]
+        request["image"], dtype=np.uint8
     )
     print(image.shape)
+    print(type(image))
 
-    return predictor.predict(image)
+    mask = predictor.predict(image).astype(np.uint8)
+    affine = np.eye(4)  # Create an identity affine matrix with the appropriate shape
+    nifti_img = nib.Nifti1Image(mask, affine) 
+                                
+    #cv2.imwrite(
+    #    "/tmp/mask.png",
+    #    # "path": "/shared/results/mask.nii.gz"
+    #    mask
+    #    )
+
+    nib.save(nifti_img, "/tmp/mask.nii.gz")
     
-    #return {
-    #    "shape": list(image.shape)
-    #}
+    #return FileResponse(
+    #    "/tmp/mask.png",
+    #    media_type="image/png",
+    #    filename="mask.png"
+    # )
 
-# @app.post("/predict")
-# def predict(request: PredictionRequest):
-#    return predictor.predict(request.image)
+    return { 
+        "type": "mask",
+        "data_path":"/tmp/mask.nii.gz",
+        "shape": list(mask.shape),
+        "dtype": str(mask.dtype)
+    }

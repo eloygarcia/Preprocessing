@@ -39,7 +39,7 @@ class Predictor(ABC):
         if torch.cuda.is_available():
             return torch.device("cuda")
         return torch.device("cpu")
-
+    
     def _warm_up(self):
         pass
 
@@ -50,20 +50,23 @@ class Predictor(ABC):
         return {
             "status": "ok",
             "model_loaded":True,
-            #"device":self.device
+            "device":self.device
         }
     
     def get_metadata(self):
         return self.metadata
     
+    def get_configuration(self):
+        return self.model.get_configuration()
+        
+    
     @torch.no_grad()
     def predict(self, data):
-        #print(self.device)
-        print('here')
-        
         x = self.preprocess(data).to(self.device)    
         y = self.model(x)
         probs = self.postprocess(y)
+
+        saliency_map = self.model.get_network().saliency_map.data.cpu().numpy()[0,1,:,:]
         
-        return probs.cpu().detach().numpy()
+        return probs, saliency_map
     

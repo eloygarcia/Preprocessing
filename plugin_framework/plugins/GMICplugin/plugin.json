@@ -1,0 +1,30 @@
+{
+    "name": "GMIC",
+    "version": "0.1",
+    "date": "2026-07-27",
+    "entry_point": "plugin.GMICPlugin",
+    "module": "plugins.GMICPlugin.plugin",
+    "class": "GMICPlugin",
+    "reference":{
+    	"author": "Shen et al",
+    	"title": "An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization",
+        "year_of_publication": "2021",
+        "doi": "10.1016/j.media.2020.101908",
+        "github": "https://github.com/nyukat/GMIC",
+        "weights": ""
+    },
+    "info": {
+        "task": "classification",
+        "input_type":"image",
+        "output_type":"heatmap/score",
+        "local_weights": ["./weights/sample_models_1.p",  "./weights/sample_models_2.p",  "./weights/sample_models_3.p",  "./weights/sample_models_4.p",  "./weights/sample_models_5.p"],        			
+        "description":"Globally-aware multiple instance classifier(GMIC)"
+    },
+    "docker":{
+               "image":"preprocessing:gmic:latest",
+               "container_name":"gmic",
+               "GPU": "all",
+               "docker_port": "8003"
+           },
+    "comments": "no comments, so far"
+    }

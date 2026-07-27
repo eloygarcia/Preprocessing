@@ -4,11 +4,11 @@ import nibabel as nib
 
 from fastapi import FastAPI, Body
 from fastapi.responses import FileResponse
-from predictor import UnetPredictor
+from predictor import Predictor
 from pydantic import BaseModel
 
 app = FastAPI()
-predictor = UnetPredictor()
+predictor = Predictor()
 
 class PredictionRequest(BaseModel):
     image: list

@@ -1,0 +1,9 @@
+name: gmic
+
+docker:
+  dockerfile: Dockerfile
+  base_image: preprocessing:notebook
+
+runtime:
+  gpu: true
+  port: 8003

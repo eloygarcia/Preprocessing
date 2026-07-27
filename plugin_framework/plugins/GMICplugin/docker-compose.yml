@@ -1,0 +1,17 @@
+# plugins/segmentation/docker-compose.yml
+
+services:
+  segmentation:
+    image: "preprocessing:gmic:latest"
+    container_name: "gmic"
+
+    ports:
+      - "8003:8003"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

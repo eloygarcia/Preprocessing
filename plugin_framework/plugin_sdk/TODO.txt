@@ -1,0 +1,18 @@
+@ TODO
+Hacer sdk
+
+Preparar estructura de archivos(crear directorio weights, crear archivos comunes...)
+Rellenar los archivos comunes via terminal??
+Checkear la información ¿Es correcta? Sí/No -> Editar.
+Preparar test para cada nuevo archivo (Carga modelo, ¿Renombrar weights?, 
+
+1. Comenzar por requirements. Checkear si se encuentra en la imagen original.
+2. Editar Plugin Yaml, Plugin.json
+ (Primero json) pero han de tener el mismo port
+3. Checkear Docker y Docker Compose, Cúal utiliza, cómo se utiliza
+¿podemos eliminar archivos yaml, docker, etc... ?
+4. Api.py checkear cómo entran las imágenes y cómo las leen. La api debe ser lo más sencillo del mundo y no ha de cambiar en nada a lo largo del desarrollo
+	- Incluir modelo devolución de parámetros y reescribir parámetros por si acaso
+5. Preprocessing, postprocessing, predictor y model
+
+

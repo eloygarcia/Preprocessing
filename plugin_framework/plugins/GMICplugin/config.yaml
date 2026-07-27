@@ -1,0 +1,11 @@
+name: gmic
+weights: "weights/sample_model_1.p"
+parameters:
+    "device_type" : "gpu"
+    "gpu_number" : 0
+    "cam_size" : [46, 30]
+    "K" : 6
+    "crop_shape" : [256, 256]
+    "percent_t" : 0.02
+    "post_processing_dim" : 256
+    "num_classes" : 2

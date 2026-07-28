@@ -17,10 +17,14 @@ def health():
 def metadata():
     return predictor.get_metadata()
 
+@app.get("/configuration")
+def configuration():
+    return predictor.get_configuration()
+
 @app.post("/predict")
 def predict(request: dict = Body(...)):
     image = np.array(
-        request["image"]
+        request["data_path"], dtype=np.uint8
     )
     print(image.shape)
 

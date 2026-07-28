@@ -11,12 +11,12 @@
         "year_of_publication": "2021",
         "doi": "10.1016/j.media.2020.101908",
         "github": "https://github.com/nyukat/GMIC",
-        "weights": ""
+        "weights": "https://github.com/nyukat/GMIC/models/sample_models_[1-5].p"
     },
     "info": {
         "task": "classification",
         "input_type":"image",
-        "output_type":"heatmap/score",
+        "output_type":"[class,score,heatmap]",
         "local_weights": ["./weights/sample_models_1.p",  "./weights/sample_models_2.p",  "./weights/sample_models_3.p",  "./weights/sample_models_4.p",  "./weights/sample_models_5.p"],        			
         "description":"Globally-aware multiple instance classifier(GMIC)"
     },

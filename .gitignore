@@ -102,12 +102,14 @@ dmypy.json
 .pyre/
 
 # Data files (optional - uncomment if you don't want to version datasets)
-# *.dcm
+*.dcm
 # *.png
 # *.jpg
 # *.jpeg
 # *.tif
 # *.tiff
+*.nii
+*.nii.gz
 
 # Large CSV files (optional - uncomment to ignore generated metadata)
 # *_metadata.csv

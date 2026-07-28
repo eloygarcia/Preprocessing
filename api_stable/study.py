@@ -14,14 +14,34 @@ except ImportError:
         from mammography import MammographyDicom
 
 
+class Breast:
+    """
+    Represents a breast in a mammography study.
+    A breast is composed of two projections of the same laterality:
+        - CC (Cranio-Caudal)
+        - MLO (Medio-Lateral Oblique)
+    """
+
+    def __init__(self, images: Dict[View, MammographyDicom]):
+        self._images = images
+        self.laterality = None
+        self.view = None
+        if images:
+            first_image = next(iter(images.values()))
+            self.laterality = first_image.metadata.breast.laterality if first_image.metadata else None
+            self.view = first_image.metadata.breast.view if first_image.metadata else None
+        
+    def __repr__(self):
+        return f"<Breast laterality={self.laterality} view={self.view}>"
+
 class MammographyStudy:
     """
     Represents a complete mammography study.
-    A study is composed of up to four mammographic projections:
-        - LCC
-        - RCC
-        - LMLO
-        - RMLO
+    A study is composed of up to two breasts (left and right) and four mammographic projections:
+        - Left CC (LCC), and MLO (LMLO)
+        - Right CC (RCC), and MLO (RMLO)
+    The study can be incomplete if one or more projections are missing.
+    The study can be represented as a dictionary of views to MammographyDicom objects.
     """
 
     def __init__(self, images: Dict[View, MammographyDicom]):

@@ -30,6 +30,7 @@ class MammographyDicom:
     def __init__(self, ds, path: Path | None = None, metadata=None):
         self.ds = ds
         self.path = path
+        self.internal_uid = generate_uid()
         if metadata is not None:
             self.metadata = metadata
         elif ds is not None:
@@ -48,15 +49,12 @@ class MammographyDicom:
             )
         return self._image
     
-    
     @property
     def view(self) -> View:
         laterality = self.metadata.breast.laterality
         projection = self.metadata.breast.view
         return f"{laterality}{projection}"
-        # return projection
     
-
     def _sync_metadata_from_image(self, image_overrides=None):
         if self._image is None:
             return self
@@ -277,6 +275,9 @@ class MammographyDicom:
     def copy(self):
         return deepcopy(self)
 
+    def get_internal_uid(self):
+        return self.internal_uid
+    
     @classmethod
     def from_dicom(cls, path):
         path = Path(path)

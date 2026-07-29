@@ -36,7 +36,9 @@ class ResultsEncoder:
     def encode(results: dict) -> dict:
         encoded_results = {}
         for key, value in results.items():
-            if isinstance(value, np.ndarray):
+            if isinstance(value, (int, float)):
+                encoded_results[key] = str(value)
+            elif isinstance(value, np.ndarray):
                 # Convert numpy array to bytes and then encode to base64
                 random_name = str(uuid.uuid4())
                 ## guardamos temporal como archivo nii.gz
@@ -45,8 +47,6 @@ class ResultsEncoder:
                 encoded_results[key] = str(image_path)
             elif isinstance(value,dict):
                 encoded_results[key] = json.dumps(value)
-            elif isinstance(value, (int, float)):
-                encoded_results[key] = str(value)
             else:
                 encoded_results[key] = value
 

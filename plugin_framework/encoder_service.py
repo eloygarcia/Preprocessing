@@ -15,7 +15,7 @@ class MammographyEncoder:
     def encode(image: MammographyDicom):
         # extraemos la imagen
         image_array = image.image.to_numpy()
-
+        
         ## guardamos temporal como archivo nii.gz
         image_path = Path("/tmp/", f"{image.get_internal_uid()}.nii.gz")
 
@@ -37,11 +37,13 @@ class MammographyEncoder:
             "metadata": json.dumps(metadata) if image.metadata else None
         }
 
-
-class ResultDecoder:        
+class ResultsDecoder:        
     @staticmethod
     def decode(request: dict) -> np.ndarray:
-        for key, value in request.items():
+        ## Decocde the metadata from the request dictionary
+        metadata = request["results"]
+        
+        for key, value in metadata.items():
             if isinstance(value, str) and value.endswith('.nii.gz'):
                 image_path = Path(value)
                 if not image_path.exists():
@@ -50,7 +52,5 @@ class ResultDecoder:
                 image_array = nii_file.get_fdata()
                 #request[key] = image_array
 
-        ## Decocde the metadata from the request dictionary
-        metadata = request["metadata"]
-
-        return image_array, metadata
+        
+        return request, image_array

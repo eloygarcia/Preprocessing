@@ -1,11 +1,16 @@
 import os
 import json
+import numpy as np
 import torch
 from abc import ABC, abstractmethod
+
+from decoder_service import MammographyDecoder, ResultsEncoder
 
 from model import Model
 from preprocessing import Preprocessing
 from postprocessing import Postprocessing
+
+from skimage.transform import resize
 
 class Predictor(ABC):
     """
@@ -34,6 +39,9 @@ class Predictor(ABC):
     
         self.preprocess = Preprocessing
         self.postprocess = Postprocessing
+
+        self.decoder = MammographyDecoder()
+        self.encoder = ResultsEncoder()
     
     def _select_device(self):
         if torch.cuda.is_available():
@@ -50,20 +58,23 @@ class Predictor(ABC):
         return {
             "status": "ok",
             "model_loaded":True,
-            #"device":self.device
+            "device": str(self.device)
         }
     
     def get_metadata(self):
         return self.metadata
     
     @torch.no_grad()
-    def predict(self, data):
-        #print(self.device)
-        print('here')
-        
-        x = self.preprocess(data).to(self.device)    
+    def predict(self, request):
+        image, metadata = self.decoder.decode(request)
+
+        x = self.preprocess(image,metadata).to(self.device)    
         y = self.model(x)
-        probs = self.postprocess(y)
+        mask = self.postprocess(y, metadata)
+
+        encoded_results = self.encoder.encode({
+                    "segmentation_mask": mask
+                })
         
-        return probs.cpu().detach().numpy()
+        return encoded_results
     

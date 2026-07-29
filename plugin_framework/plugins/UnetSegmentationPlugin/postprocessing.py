@@ -2,30 +2,55 @@ import cv2
 import numpy as np
 import torch
 
-def Postprocessing(prediction):
+from skimage.transform import resize
+
+def Postprocessing(prediction, metadata):
     # Implement your postprocessing logic here
     # For example, you can convert the prediction to a specific format or apply any necessary transformations
-    # return torch.sigmoid(prediction)
-    return prediction.argmax(dim=1).squeeze(0)
+    # upsample to original size
+    output_size = [metadata['rows'], metadata['columns']]
+    prediction = torch.nn.functional.interpolate(prediction, size=output_size, mode='bilinear', align_corners=False)
+    mask =prediction.argmax(dim=1).squeeze(0)
+    
+    if metadata['laterality'] == "R":
+        mask = np.fliplr(mask.cpu().numpy())
+    else:
+        mask = mask.cpu().numpy()
+    """
+    if metadata['view'] == "CC":
+        mask[mask == 2] = 1
+    elif metadata['view'] == "MLO":
+        # Extend the pectoral muscle mask (value 2) upward and toward the nearest lateral side
+        # Get bounding box coordinates for the pectoral muscle region
+        pectoral_mask = (mask == 2).astype(np.uint8)
+        contours, _ = cv2.findContours(pectoral_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if contours:
+            # Get the largest contour (assuming it's the pectoral muscle)
+            largest_contour = max(contours, key=cv2.contourArea)
+            x, y, w, h = cv2.boundingRect(largest_contour)
+            
+            # Extend the pectoral muscle mask
+            # mask = _extend_mask_upward_and_sideways(mask)
+        else:
+            print("Warning: No pectoral muscle found in the segmentation mask.")
+    """        
+    return mask.astype(np.uint8)
 
-def _extend_mask_upward_and_sideways(mask, bbox_coords):
+def _extend_mask_upward_and_sideways(mask):
     """
     Extend the pectoral muscle mask (value 2) upward and toward the nearest lateral side.
+    Only works for Left images!! 
     
     Parameters:
     -----------
     mask : np.ndarray
-        The segmentation mask
-    bbox_coords : tuple
-        Bounding box coordinates (x_min, y_min, x_max, y_max)
-    
+        The segmentation mask    
     Returns:
     --------
     np.ndarray
         Extended mask
-    """
-    x_min, y_min, x_max, y_max = bbox_coords
-    
+    """    
     # Validate and clip bounding box coordinates to image dimensions
     height, width = mask.shape[:2]
     x_min = max(0, min(x_min, width - 1))
@@ -83,14 +108,9 @@ def _extend_mask_upward_and_sideways(mask, bbox_coords):
             dist_to_left = abs(most_interior_col - 0)
             dist_to_right = abs(most_interior_col - mask.shape[1])
             
-            # Fill from most interior pixel to the nearest lateral edge
-            if dist_to_left <= dist_to_right:
-                # Left edge is closer, fill from left edge to interior pixel
-                extended_mask[row, x_min:most_interior_col + 1] = 2
-            else:
-                # Right edge is closer, fill from interior pixel to right edge
-                extended_mask[row, most_interior_col:x_max] = 2
-    
+            
+            extended_mask[row, x_min:most_interior_col + 1] = 2
+            
     # Apply morphological closing to fill holes in the pectoral muscle mask
     pectoral_region_extended = (extended_mask == 2).astype(np.uint8)
     
@@ -104,45 +124,3 @@ def _extend_mask_upward_and_sideways(mask, bbox_coords):
     extended_mask[closed_pectoral == 1] = 2
     
     return extended_mask
-
-
-def _get_segmentation_probabilities(self, input_image, output_size=None):
-    """
-        Gives a segmentation probabilities back for an input image
-        input_image: can be a path to dicom mammogram or a numpy array (ideally with pixel spacing 0.4 mm)
-        output_size: if specified, the model will return the segmentation in output size, if None, the output will
-        match the original size of the mammogram. Default is None
-    """
-    image, original_size = self._check_and_get_correct_image_input(input_image)
-    image = image.to(self.model.device)  # put image to same device as model
-
-    # run_model
-    output = self.model.eval().forward(image.unsqueeze(0).unsqueeze(0), pad_tensor=True)
-
-    # upsample to original size
-    if output_size:
-        output = torch.nn.functional.interpolate(output, size=output_size, mode='bilinear', align_corners=False)
-    else:
-        output = torch.nn.functional.interpolate(output, size=original_size, mode='bilinear', align_corners=False)
-    return output
-
-def _get_segmentation(self, input_image, fill_holes_in_breast=False, output_size=None):
-    """
-        Gives a segmentation back for an input image
-        input_image: can be a tensor or a path to a path to dicom image
-        fill_holes_in_breast: if True, this function will only keep the largest segmented breast area and fill any
-        existing holes
-        output_size: if specified, the model will return the segmentation in output size, if None, the output will
-        match the original size of the mammogram. Default is None
-        :return:
-    """
-    output = self.get_segmentation_probabilities(input_image, output_size)
-    
-    # get segmentation
-    segmentation = output.argmax(dim=1)
-    # segmentation = output[:,2,:,:] 
-    segmentation = segmentation.squeeze().to('cpu').numpy()
-    if fill_holes_in_breast:
-        print("Filling holes in breast segmentation...")
-        segmentation = self._fill_holes_in_breast(segmentation)
-    return segmentation

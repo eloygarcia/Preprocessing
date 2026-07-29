@@ -3,8 +3,6 @@ from fastapi import FastAPI, Body
 from predictor import Predictor
 from pydantic import BaseModel
 
-from decoder_service import MammographyDecoder, ResultsEncoder
-
 app = FastAPI()
 predictor = Predictor()
 
@@ -26,15 +24,4 @@ def configuration():
 @app.post("/predict")
 def predict(request: dict = Body(...)):
 
-    decoder = MammographyDecoder()
-    image, metadata = decoder.decode(request)
-
-    score, saliency_map = predictor.predict(image, metadata)
-
-    encoder = ResultsEncoder()
-    encoded_results = encoder.encode({
-        "score": score,
-        "saliency_map": saliency_map
-    })
-
-    return encoded_results
+    return predictor.predict(request)

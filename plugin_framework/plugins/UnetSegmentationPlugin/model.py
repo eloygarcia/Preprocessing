@@ -14,7 +14,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.num_classes = 2
 
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+        dir_path = os.path.dirname(os.path.abspath(__file__))
         print(dir_path)
         self.model_weight_path = dir_path+'/weights/segmentation_weights.ckpt'
         self.device = "cuda" if torch.cuda.is_available() else "cpu"

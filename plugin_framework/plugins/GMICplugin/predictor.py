@@ -1,3 +1,4 @@
+from json import encoder
 import os
 import json
 import torch
@@ -8,6 +9,8 @@ from preprocessing import Preprocessing
 from postprocessing import Postprocessing
 
 from skimage.transform import resize
+
+from decoder_service import MammographyDecoder, ResultsEncoder
 
 class Predictor(ABC):
     """
@@ -36,6 +39,9 @@ class Predictor(ABC):
     
         self.preprocess = Preprocessing
         self.postprocess = Postprocessing
+
+        self.decoder = MammographyDecoder()
+        self.encoder = ResultsEncoder()
     
     def _select_device(self):
         if torch.cuda.is_available():
@@ -51,7 +57,8 @@ class Predictor(ABC):
     def health_check(self):
         return {
             "status": "ok",
-            "model_loaded":True
+            "model_loaded":True,
+            "device": str(self.device)
         }
     
     def get_metadata(self):
@@ -62,13 +69,20 @@ class Predictor(ABC):
         
     
     @torch.no_grad()
-    def predict(self, image, metadata):
+    def predict(self, request):
+        image, metadata = self.decoder.decode(request)
+        
         x = self.preprocess(image,metadata).to(self.device)
         y = self.model(x)
         probs = self.postprocess(y)
 
         saliency_map = self.model.get_network().saliency_map.data.cpu().numpy()[0,1,:,:]
         saliency_map = resize(saliency_map, image.shape[-2:], preserve_range=True)
+
+        encoded_results = self.encoder.encode({
+            "score": str(probs),
+            "saliency_map": saliency_map
+        })
         
-        return probs, saliency_map
+        return encoded_results
     

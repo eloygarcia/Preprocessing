@@ -10,23 +10,6 @@ import requests
 
 from api_stable.mammography import MammographyDicom
 
-from pydicom.multival import MultiValue
-
-def convert_multivalues(obj):
-    if isinstance(obj, MultiValue):
-        return list(obj)
-    if isinstance(obj, dict):
-        return {
-            k: convert_multivalues(v)
-            for k, v in obj.items()
-        }
-    if isinstance(obj, list):
-        return [
-            convert_multivalues(v)
-            for v in obj
-        ]
-    return obj
-
 class MammographyEncoder:
     @staticmethod
     def encode(image: MammographyDicom):

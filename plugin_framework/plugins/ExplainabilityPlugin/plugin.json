@@ -1,18 +1,29 @@
 {
-    "name": "resnet-xai",
+    "name": "resnet-classification",
     "version": "0.1",
-    "date": 2023,
-    "author": "Based on Karla Sam-Millan's work",
-    "github": "https://github.com/VICTORIA-project/Deep-Learning-Explainability-for-Breast-Cancer-Detection-in-Mammography",
-    "weights_repository": "https://github.com/VICTORIA-project/Deep-Learning-Explainability-for-Breast-Cancer-Detection-in-Mammography",   
-    "task": "classification/explainability",
-    "input_type":"image",
-    "ouput_type":"xAI heatmap",
-    "description":"Resnet for explainability AI",
+    "date": "2026-07-27",
     "entry_point": "plugin.ImageClassificationPlugin",
     "module": "plugins.imageclassification.plugin",
     "class": "ImageClassificationPlugin",
-    "docker_name":"resnet-xai",
-    "docker_port": 8004,
+    "reference":{
+        "author": "Karla Sam-Millan et al",
+        "title": "Deep Learning Explainability for Breast Cancer Detection in Mammography",
+        "year_of_publication": "2023",
+        "github": "https://github.com/VICTORIA-project/Deep-Learning-Explainability-for-Breast-Cancer-Detection-in-Mammography",
+        "weights_repository": "https://github.com/VICTORIA-project/Deep-Learning-Explainability-for-Breast-Cancer-Detection-in-Mammography"
+    },
+    "info": {
+        "task": "classification",
+        "input_type":"image",
+        "output_type":"[class,score,heatmap]",
+        "local_weights": ["./weights/resnet18_mammography.pth"],
+        "description":"Efficientnet_b0 network for mammography image classification. The work can be extended to produce GradCAM heatmaps"
+    },
+    "docker":{
+               "image":"preprocessing:resnet-classification:latest",
+               "container_name":"preprocessing-resnet-classification",
+               "GPU": "all",
+                "docker_port": 8003
+           },
     "comments":"no comments, so far"
 }

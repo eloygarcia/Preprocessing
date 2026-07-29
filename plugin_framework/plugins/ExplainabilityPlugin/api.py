@@ -1,10 +1,10 @@
 import numpy as np
 from fastapi import FastAPI, Body
-from predictor import ResNetPredictor
+from predictor import Predictor
 from pydantic import BaseModel
 
 app = FastAPI()
-predictor = ResNetPredictor()
+predictor = Predictor()
 
 class PredictionRequest(BaseModel):
     image: list

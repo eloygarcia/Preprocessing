@@ -1,0 +1,26 @@
+services:
+
+  xai-plugin:
+    image: preprocessing:explainability
+
+    build:
+      context: .
+
+    container_name: preprocessing-explainability
+
+    ports:
+      - "8004:8004"
+
+    environment:
+      PYTHONPATH: /plugin
+      XAI_DEVICE: gpu
+
+    gpus: all
+
+    volumes:
+    - ./tmp/:/tmp/    
+
+    labels:
+      ai.plugin: "true"
+      ai.task: "explainability"
+      ai.port: "8004"

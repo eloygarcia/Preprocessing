@@ -1,9 +1,9 @@
 name: gmic
 
 docker:
-  image: preprocessing:gmic
+  image: preprocessing:explainability
   base_image: preprocessing:notebook
 
 runtime:
   gpu: true
-  port: 8003
+  port: 8004

@@ -54,9 +54,9 @@ COPY . /workspace
 RUN pip install -r /tmp/myyolox_requirements.txt && \
     pip install --no-build-isolation -e /workspace/MyYoloX 
 
+FROM yolox_runtime AS yolox_api
+CMD ["uvicorn", "common_tasks.serve.yolox_api:app", "--host", "0.0.0.0", "--port", "8001"]
+
 FROM notebook_runtime AS notebook
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
-
-FROM yolox_runtime AS yolox_api
-CMD ["uvicorn", "common_tasks.serve.yolox_api:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 

@@ -1,0 +1,9 @@
+name: resnet-classification
+
+docker:
+  image: preprocessing:resnet-classification
+  base_image: preprocessing:notebook
+
+runtime:
+  gpu: true
+  port: 8005

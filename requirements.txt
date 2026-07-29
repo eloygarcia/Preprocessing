@@ -1,6 +1,8 @@
 # Requirements for base 
 
 ## Common packages: 
+docker
+
 ### python
 tqdm
 numpy

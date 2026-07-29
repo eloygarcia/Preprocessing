@@ -1,37 +1,41 @@
 import requests
 
+from plugin_manager import PluginManager
+from encoder_service import MammographyEncoder
+
+from api_stable.mammography import MammographyDicom
+
 
 class InferenceService:
     def __init__(self, plugin_manager):
         self.plugin_manager = plugin_manager
+        self.encoder = MammographyEncoder()
 
     def predict(
         self,
         algorithm_name,
         image
     ):
-        payload = {
-            "image": image.tolist(), 
-            "metadata": {
-                "algorithm_name": algorithm_name }
-        }
+        payload = self.encoder.encode(image)
+        print(payload)
 
         plugin = self.plugin_manager.get_algorithm(
             algorithm_name
         )
         
         health = requests.get(
-            f"{plugin['url']}/health")
+            f"{plugin.get_url()}/health")
+        print(health.json())
 
         if health.json()['status'] != 'ok':
             raise RuntimeError("Health check failed")
         
         response = requests.post(
-            f"{plugin['url']}/predict",
+            f"{plugin.get_url()}/predict",
             json=payload
         )
-
-        return response.json()
+        print(response)
+        return response #.json()
 
 """       
 class InferenceRequest:

@@ -2,7 +2,6 @@ import os
 import json
 import torch
 from abc import ABC, abstractmethod
-#from plugin_framework.predictor import Predictor
 
 from model import Model
 from preprocessing import Preprocessing
@@ -19,33 +18,6 @@ class Predictor(ABC):
     - Running inference
     - Performing postprocessing
     """
-
-    def __init__(self):
-        pass
-        # with open(metadata_path, "r") as f:
-        #     self.metadata = json.load(f)
-        
-    def _select_device(self):
-        pass
-    
-    def _get_device(self):
-        pass
-
-    def _warmup(self):
-        pass
-
-    def health_check(self):
-        return {"status": "ok"} 
-
-    def get_metadata(self):
-        pass
-    
-    @torch.no_grad()
-    def predict(self, data):
-       pass
-
-# class Predictor(ABC):
-class ResNetPredictor(Predictor):
     def __init__(
         self,
         device=None
@@ -71,11 +43,10 @@ class ResNetPredictor(Predictor):
     def get_device(self):
         return self.device
     
-   def health_check(self):
+    def health_check(self):
         return {
             "status": "ok",
-            "model_loaded":True,
-            "device":self.device
+            "model_loaded":True
         }
     
     def get_metadata(self):

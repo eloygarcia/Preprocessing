@@ -22,13 +22,19 @@ def standard_normalize_single_image(image):
     image /= np.maximum(np.std(image), 10**(-5))
     return image
 
-def Preprocessing(image):
+def Preprocessing(image,metadata):
     # Implement your preprocessing logic here
     # For example, you can convert the study to a specific format or apply any necessary transformations
     
     image = image.astype(np.float32)
-    best_center=[100,1920]
-    view = "L-MLO"
+    print(f"{metadata['laterality']}-{metadata['view']}")
+    view = f"{metadata['laterality']}-{metadata['view']}"
+
+    best_center = [image.shape[0]//2,0]
+    if metadata['laterality'] == "L":
+        best_center[1] = image.shape[1]//4
+    elif metadata['laterality'] == "R":
+        best_center[1] = 3*image.shape[1]//4
 
     cropped_image, _ = augmentations.random_augmentation_best_center(
         image=image,

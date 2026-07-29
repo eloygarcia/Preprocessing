@@ -16,3 +16,11 @@ services:
       UNET_DEVICE: gpu
 
     gpus: all
+
+    volumes:
+    - ./tmp/:/tmp/
+    
+    labels:
+      ai.plugin: "true"
+      ai.task: "segmentation"
+      ai.port: "8002"

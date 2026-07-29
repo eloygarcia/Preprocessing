@@ -7,6 +7,8 @@ from model import Model
 from preprocessing import Preprocessing
 from postprocessing import Postprocessing
 
+from skimage.transform import resize
+
 class Predictor(ABC):
     """
     Base predictor for all MammoLab AI plugins.
@@ -49,8 +51,7 @@ class Predictor(ABC):
     def health_check(self):
         return {
             "status": "ok",
-            "model_loaded":True,
-            "device":self.device
+            "model_loaded":True
         }
     
     def get_metadata(self):
@@ -61,12 +62,13 @@ class Predictor(ABC):
         
     
     @torch.no_grad()
-    def predict(self, data):
-        x = self.preprocess(data).to(self.device)    
+    def predict(self, image, metadata):
+        x = self.preprocess(image,metadata).to(self.device)
         y = self.model(x)
         probs = self.postprocess(y)
 
         saliency_map = self.model.get_network().saliency_map.data.cpu().numpy()[0,1,:,:]
+        saliency_map = resize(saliency_map, image.shape[-2:], preserve_range=True)
         
         return probs, saliency_map
     

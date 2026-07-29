@@ -22,9 +22,9 @@
     },
     "docker":{
                "image":"preprocessing:gmic:latest",
-               "container_name":"gmic",
+               "container_name":"preprocessing-gmic",
                "GPU": "all",
                "docker_port": "8003"
            },
     "comments": "no comments, so far"
-    }
+}

@@ -3,9 +3,9 @@
 set -e
 
 echo "=== Building base image ==="
-# docker build \
-#   -f docker/Dockerfile.services \
-#   -t preprocessing:notebook .
+#docker build \
+#  -f docker/Dockerfile.services \
+#  -t preprocessing:notebook .
 
 echo "=== Building plugins ==="
 

@@ -1,0 +1,26 @@
+services:
+
+  resnet-plugin:
+    image: preprocessing:resnet-classification
+
+    build:
+      context: .
+
+    container_name: preprocessing-resnet-classification
+
+    ports:
+      - "8005:8005"
+
+    environment:
+      PYTHONPATH: /plugin
+      RESNET_DEVICE: gpu
+
+    gpus: all
+    
+    volumes:
+    - ./tmp/:/tmp/
+
+    labels:
+      ai.plugin: "true"
+      ai.task: "classification"
+      ai.port: "8005"

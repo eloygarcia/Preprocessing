@@ -1,17 +1,27 @@
-# plugins/segmentation/docker-compose.yml
+# plugins/gmic/docker-compose.yml
 
 services:
-  segmentation:
-    image: "preprocessing:gmic:latest"
-    container_name: "gmic"
+  gmic-plugin:
+    image: "preprocessing:gmic"
+    
+    build:
+      context: .
+
+    container_name: preprocessing-gmic
 
     ports:
       - "8003:8003"
 
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    environment:
+      PYTHONPATH: /plugin
+      GMIC_DEVICE: gpu 
+    
+    gpus: all
+    
+    volumes:
+    - ./tmp/:/tmp/
+    
+    labels:
+      ai.plugin: "true"
+      ai.task: "explainability"
+      ai.port: "8003"

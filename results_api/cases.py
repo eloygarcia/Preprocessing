@@ -1,13 +1,19 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from services.metadata.metadata import StudyResult
+from results_api.metadata.metadata import StudyResult
 from api_stable.mammography import MammographyDicom
 
 @dataclass
 class MammographyCase:
     mammography: MammographyDicom
     results: StudyResult
+
+@dataclass
+class BreastCase:
+    laterality: str
+    view: str
+    mammography_cases: list[MammographyCase] = field(default_factory=list)
 
 @dataclass
 class StudyCase:

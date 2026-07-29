@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	zlib1g-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY requirement.txt /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 
 RUN python3 -m venv "$VIRTUAL_ENV" && \
 	python3 -m pip install --upgrade pip setuptools wheel && \

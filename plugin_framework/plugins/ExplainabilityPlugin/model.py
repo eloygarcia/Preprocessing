@@ -8,6 +8,7 @@ class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
         self.num_classes = 0
+        self.initialized = False
         
         self.weights_dir = os.path.dirname(os.path.abspath(__file__))
         self.model_weight_path = ""
@@ -45,6 +46,12 @@ class Model(nn.Module):
         self.model = self._load_model(model_name)
         self.model = self.model.to(self.device)
         self.model.eval()
+        self.intialized = True
+
+    def get_model(self):
+        if not self.initialized:
+            self.initialize_model(model_name='efficientnetb0')
+        return self.model
 
     def forward(self, x):
         return self.model(x)

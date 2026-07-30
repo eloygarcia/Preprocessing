@@ -54,8 +54,8 @@ class ExplainabilityEngine:
         attributions = grad_cam.attribute(input_tensor, target=target_class)
         
         # Sum across channels and normalize
-        #cam = attributions.squeeze(0).abs().mean(dim=0).cpu().detach().numpy()
-        cam = attributions.squeeze(0).abs().sum(dim=0).cpu().detach().numpy()
+        cam = attributions.squeeze(0).abs().mean(dim=0).cpu().detach().numpy()
+        #cam = attributions.squeeze(0).abs().sum(dim=0).cpu().detach().numpy()
         cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-10)
         
         return cam
@@ -114,7 +114,7 @@ class ExplainabilityEngine:
         # Create background dataset
         background = torch.randn((background_size, *input_tensor.shape[1:])).to(self.device)
         
-        explainer = shap.DeepExplainer(self.model, background)
+        explainer = shap.DeepExplainer(self.model.get_model(), background)
         shap_values = explainer.shap_values(input_tensor)
         
         return shap_values

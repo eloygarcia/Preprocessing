@@ -10,6 +10,7 @@ from preprocessing import Preprocessing
 from postprocessing import Postprocessing
 
 from decoder_service import MammographyDecoder, ResultsEncoder
+from original_src.xai_explainability import ExplainabilityEngine, get_target_layer
 
 class Predictor(ABC):
     """
@@ -84,10 +85,18 @@ class Predictor(ABC):
         y = self.model(x)
         probs = self.postprocess(y)
 
+        ## Explainability step 
+        target_layer = get_target_layer(self.model, self.config['model'])
+        xai_engine = ExplainabilityEngine(model=self.model, 
+                                          device = self.device, 
+                                          model_name=self.config['model'])
+
+        heatmap = xai_engine.gradcam_attribution(x, target_layer,target_class=0)
+
         ## Encode the results to return a JSON response
         encoded_results = self.encoder.encode({
             "score": str(probs),
-            "heatmap": None
+            "heatmap": heatmap
         })
 
         return encoded_results

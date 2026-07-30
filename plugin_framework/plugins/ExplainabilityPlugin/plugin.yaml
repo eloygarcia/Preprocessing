@@ -1,7 +1,9 @@
-name: gmic
+name: xai
+version: 0.1
+date: 2026-07-27
 
 docker:
-  image: preprocessing:explainability
+  image: preprocessing:xai
   base_image: preprocessing:notebook
 
 runtime:

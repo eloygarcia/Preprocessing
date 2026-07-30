@@ -1,11 +1,15 @@
 import os
 import json
+
+import yaml
 import torch
 from abc import ABC, abstractmethod
 
 from model import Model
 from preprocessing import Preprocessing
 from postprocessing import Postprocessing
+
+from decoder_service import MammographyDecoder, ResultsEncoder
 
 class Predictor(ABC):
     """
@@ -27,13 +31,23 @@ class Predictor(ABC):
             self.metadata = json.load(f)
         
         self.device = device or self._select_device()
+
+        self.config = {}
+        with open("config.yaml") as stream:
+            try:
+                self.config = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
         
-        self.model = Model()
-        self.model = self.model.to(self.device)
-        self.model.eval()
+        self.model_name = self.config['model']
+        self.model = self._load_model()
     
         self.preprocess = Preprocessing
         self.postprocess = Postprocessing
+
+        self.decoder = MammographyDecoder()
+        self.encoder = ResultsEncoder()
+    
     
     def _select_device(self):
         if torch.cuda.is_available():
@@ -46,24 +60,35 @@ class Predictor(ABC):
     def health_check(self):
         return {
             "status": "ok",
-            "model_loaded":True
+            "model_name": self.model_name,
+            "model_loaded":True,
+            "device": str(self.device)
         }
     
     def get_metadata(self):
         return self.metadata
+
+    def _load_model(self):
+        model = Model()
+        model.initialize_model(self.model_name)
+        return model
+    
     
     @torch.no_grad()
-    def predict(self, data):
-        print(self.device)
+    def predict(self, request: dict):
+        ## Decode the request to get the image and metadata
+        image, metadata = self.decoder.decode(request)
 
-        #self.model = self.model.to(self.device)
-        #self.model.eval()
-        
-        x = self.preprocess(data).to(self.device)    
-
+        ## Preprocess the image and run inference
+        x = self.preprocess(image, metadata, self.config).to(self.device)
         y = self.model(x)
         probs = self.postprocess(y)
-        
-        # return y.float().cpu().numpy()
-        return probs.cpu()
+
+        ## Encode the results to return a JSON response
+        encoded_results = self.encoder.encode({
+            "score": str(probs),
+            "heatmap": None
+        })
+
+        return encoded_results
     

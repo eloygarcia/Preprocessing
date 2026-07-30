@@ -1,0 +1,8 @@
+name: xAI
+model: "resnet50"
+weights: "weights/best_model_resnet50_ft_full_1024.pth"
+parameters:
+    "device_type" : "gpu"
+    "gpu_number" : 0
+    "input_size" : [1024, 512]
+    "num_classes" : 2

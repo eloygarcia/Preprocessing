@@ -1,6 +1,7 @@
 import numpy as np
 from enum import Enum
 from dataclasses import dataclass
+from pydantic import BaseModel
 
 class View(Enum):
     LCC = "LCC"
@@ -8,47 +9,41 @@ class View(Enum):
     LMLO = "LMLO"
     RMLO = "RMLO"
 
-@dataclass
-class PatientInfo:
+class PatientInfo(BaseModel):
     patient_id: str | None
     age: int | None
     sex: str | None
 
-@dataclass
-class VendorInfo:
+class VendorInfo(BaseModel):
     manufacturer: str | None
     model_name: str | None
     #software_version: str | None
 
-@dataclass
-class AcquisitionInfo:
+class AcquisitionInfo(BaseModel):
     kvp: float | None
     exposure: float | None
     exposure_time: float | None
     tube_current: float | None
     compression_force: float | None
 
-@dataclass
-class BreastInfo:
+class BreastInfo(BaseModel):
     laterality: str | None
     view: str | None
     breast_implant_present: bool | None
 
-@dataclass
-class ImageInfo:
+class ImageInfo(BaseModel):
     rows: int
     columns: int
     bits_stored: int
     pixel_spacing: tuple[float,float] | None
     photometric_interpretation: str | None # MONOCHROME1\MONOCHROME2
     presentation_lut_shape: str | None # IDENTITY\INVERSE
-    window_center: float | None
-    window_width: float | None
-    window_center_width_explanation: str | None  # NORMAL\HARDER\SOFTER
+    window_center: list | None
+    window_width: list | None
+    window_center_width_explanation: list | None  # NORMAL\HARDER\SOFTER
     voi_lut_function: str | None
 
-@dataclass
-class MammographyMetadata:
+class MammographyMetadata(BaseModel):
     patient: PatientInfo
     vendor: VendorInfo
     acquisition: AcquisitionInfo

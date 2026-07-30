@@ -83,9 +83,15 @@ class MammographyDicom:
 
         window_center = self.metadata.image.window_center
         window_width = self.metadata.image.window_width
-        # print(len(window_center))
-        # print(len(window_width))
+
         
+        print(isinstance(window_center,list))
+        print(isinstance(window_width,list))
+        
+        if isinstance(window_center, list) and isinstance(window_width, list):
+            window_center = window_center[0]
+            window_width = window_width[0]
+            
         if isinstance(window_center, pydicom.multival.MultiValue) and isinstance(window_width, pydicom.multival.MultiValue):
             window_center = window_center[0]
             window_width = window_width[0]
@@ -97,7 +103,10 @@ class MammographyDicom:
             window_width=window_width,
             voi_lut_function=voi_func,
         )
+        
         last_windowing = self.image.last_windowing or {}
+
+        """
         self._sync_metadata_from_image(
             image_overrides={
                 "window_center": last_windowing.get("window_center", window_center),
@@ -106,6 +115,7 @@ class MammographyDicom:
                 "window_center_width_explanation": "APPLIED",
             }
         )
+        """
         return self
 
     @staticmethod

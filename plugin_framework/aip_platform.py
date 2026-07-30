@@ -19,8 +19,8 @@ class AIPlatform:
         
     def predict(
         self,
-        algorithm,
-        image
+        algorithm: str,
+        image: MammographyDicom
     ):
         self.results['algorithm'] = algorithm
         self.results['version'] = self.manager.get_algorithm(algorithm).get_metadata()['version']

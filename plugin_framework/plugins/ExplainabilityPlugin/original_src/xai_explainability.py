@@ -7,22 +7,24 @@ import os
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+import matplotlib
 from PIL import Image
 import cv2
 from tqdm import tqdm
 from pathlib import Path
 
+from skimage.transform import resize
+
 # XAI Libraries
 import shap
-from captum.attr import GradCAM, IntegratedGradients, Saliency
+from captum.attr import LayerGradCam, IntegratedGradients, Saliency
 from captum.attr import visualization as viz
 
-from models import *
-from Transforms import *
-from Datasets import *
-from MultiModels import MultiModel
-from Arguments import arguments
+# from models import *
+# from Transforms import *
+# from Datasets import *
+# from MultiModels import MultiModel
+# from Arguments import arguments
 
 
 class ExplainabilityEngine:
@@ -48,11 +50,12 @@ class ExplainabilityEngine:
         Returns:
             cam: CAM heatmap (H, W)
         """
-        grad_cam = GradCAM(self.model, target_layer)
+        grad_cam = LayerGradCam(self.model, target_layer)
         attributions = grad_cam.attribute(input_tensor, target=target_class)
         
         # Sum across channels and normalize
-        cam = attributions.squeeze(0).abs().mean(dim=0).cpu().detach().numpy()
+        #cam = attributions.squeeze(0).abs().mean(dim=0).cpu().detach().numpy()
+        cam = attributions.squeeze(0).abs().sum(dim=0).cpu().detach().numpy()
         cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-10)
         
         return cam
@@ -115,40 +118,7 @@ class ExplainabilityEngine:
         shap_values = explainer.shap_values(input_tensor)
         
         return shap_values
-    
-    @staticmethod
-    def overlay_heatmap(image_np, heatmap, alpha=0.5, cmap='jet'):
-        """
-        Overlay heatmap on original image
-        
-        Args:
-            image_np: Original image (H, W, 3) normalized to [0, 1]
-            heatmap: Heatmap (H, W) normalized to [0, 1]
-            alpha: Transparency of heatmap
-            cmap: Colormap name
-            
-        Returns:
-            overlay: Overlayed image (H, W, 3)
-        """
-        # Ensure image is in [0, 1]
-        if image_np.max() > 1:
-            image_np = image_np / 255.0
-        
-        # Apply colormap to heatmap
-        colormap = cm.get_cmap(cmap)
-        heatmap_colored = colormap(heatmap)[:, :, :3]
-        
-        # Resize heatmap to match image if needed
-        if heatmap_colored.shape != image_np.shape:
-            heatmap_colored = cv2.resize(heatmap_colored, 
-                                        (image_np.shape[1], image_np.shape[0]))
-        
-        # Overlay
-        overlay = (1 - alpha) * image_np + alpha * heatmap_colored
-        overlay = np.clip(overlay, 0, 1)
-        
-        return overlay
-    
+
     @staticmethod
     def show_attribution_map(image_np, attribution_map, title="Attribution Map", 
                             save_path=None, figsize=(12, 4)):
@@ -166,16 +136,19 @@ class ExplainabilityEngine:
         fig.suptitle(title, fontsize=16)
         
         # Normalize image if needed
-        if image_np.ndim == 3 and image_np.max() > 1:
-            image_np = image_np / 255.0
-        elif image_np.ndim == 2:
-            image_np = np.stack([image_np] * 3, axis=-1)
+        #
+        #if image_np.ndim == 3 and image_np.max() > 1:
+        #    image_np = image_np / 255.0
+        #elif image_np.ndim == 2:
+        #    image_np = np.stack([image_np] * 3, axis=-1)
         
         # Original image
         axes[0].imshow(image_np, cmap='gray')
         axes[0].set_title('Original Image')
         axes[0].axis('off')
-        
+
+        attribution_map = resize(attribution_map, (image_np.shape[0], image_np.shape[1]), preserve_range=True)
+
         # Attribution map
         im = axes[1].imshow(attribution_map, cmap='jet')
         axes[1].set_title('Attribution Map')
@@ -183,18 +156,18 @@ class ExplainabilityEngine:
         plt.colorbar(im, ax=axes[1])
         
         # Overlay
-        overlay = ExplainabilityEngine.overlay_heatmap(image_np, attribution_map, 
-                                                       alpha=0.6, cmap='jet')
-        axes[2].imshow(overlay)
+        axes[2].imshow(image_np, cmap='gray')
+        axes[2].imshow(attribution_map, cmap='jet', alpha=0.6)
         axes[2].set_title('Overlay')
         axes[2].axis('off')
         
         plt.tight_layout()
+
         
-        if save_path:
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
-            print(f"Saved: {save_path}")
+        # if save_path:
+        #     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        #     plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        #     print(f"Saved: {save_path}")
         
         plt.show()
     
@@ -235,10 +208,10 @@ class ExplainabilityEngine:
         
         plt.tight_layout()
         
-        if save_path:
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
-            print(f"Saved: {save_path}")
+        # if save_path:
+        #     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        #     plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        #     print(f"Saved: {save_path}")
         
         plt.show()
 
@@ -254,23 +227,26 @@ def get_target_layer(model, model_name):
     Returns:
         target_layer: Layer for Grad-CAM attribution
     """
+    print(f"Getting target layer for model: {model_name}")
     if 'resnet' in model_name.lower():
         # For ResNet models
+        return model.model.layer4[-1]
         if hasattr(model, 'features'):
             return model.features[-1][-1]
         elif hasattr(model, 'backbone'):
-            return model.backbone.layer4[-1]
+            return model.model.backbone.layer4[-1]
     elif 'efficientnet' in model_name.lower():
-        if hasattr(model, 'features'):
-            return model.features[-1]
+        print("Using EfficientNet model")
+        #if hasattr(model, 'features'):
+        return model.model.features[-1]
     elif 'mobilenet' in model_name.lower():
-        if hasattr(model, 'features'):
-            return model.features[-1]
+        # if hasattr(model, 'features'):
+        return model.model.features[-1]
     
     # Fallback to last layer
     return list(model.modules())[-2]
 
-
+"""
 def main():
     print('Mammography Classification - Explainability Analysis')
     print('')
@@ -380,3 +356,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+"""

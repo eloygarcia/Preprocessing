@@ -139,7 +139,7 @@ class MetadataFactory:
 
     @staticmethod
     def to_dict(metadata: MammographyMetadata):
-        return asdict(metadata)
+        return metadata.dict()
 
     @staticmethod
     def create_default(pixel_array: np.ndarray | None = None, defaults: dict | None = None):

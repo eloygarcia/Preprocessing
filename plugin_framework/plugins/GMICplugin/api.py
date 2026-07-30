@@ -23,5 +23,4 @@ def configuration():
 
 @app.post("/predict")
 def predict(request: dict = Body(...)):
-
     return predictor.predict(request)

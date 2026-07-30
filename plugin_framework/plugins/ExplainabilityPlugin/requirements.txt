@@ -20,7 +20,7 @@ shapely
 
 captum
 
-# shap
+shap
 # lime
 # omnixai ## Cuidado con este
 

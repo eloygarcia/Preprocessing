@@ -1,12 +1,12 @@
 services:
 
   xai-plugin:
-    image: preprocessing:explainability
+    image: preprocessing:xai
 
     build:
       context: .
 
-    container_name: preprocessing-explainability
+    container_name: preprocessing-xai
 
     ports:
       - "8004:8004"

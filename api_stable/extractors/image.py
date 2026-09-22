@@ -17,6 +17,14 @@ def _as_float_tuple(values):
 
 class ImageExtractor:
 	@staticmethod
+	def _as_list_or_none(value):
+		if value is None:
+			return None
+		if isinstance(value, MultiValue):
+			return list(value)
+		return [value]
+
+	@staticmethod
 	def extract(ds) -> ImageInfo:
 		return ImageInfo(
 			rows=getattr(ds, "Rows", None),
@@ -25,8 +33,8 @@ class ImageExtractor:
 			pixel_spacing=_as_float_tuple(getattr(ds, "PixelSpacing", None)),
 			photometric_interpretation=getattr(ds, "PhotometricInterpretation", None),
 			presentation_lut_shape=getattr(ds, "PresentationLUTShape", None),
-			window_center = list(getattr(ds, "WindowCenter", None)) if isinstance(getattr(ds, "WindowCenter", None), MultiValue) else list([getattr(ds, "WindowCenter", None)]),
-			window_width = list(getattr(ds, "WindowWidth", None)) if isinstance(getattr(ds, "WindowWidth", None), MultiValue) else list([getattr(ds, "WindowWidth", None)]),
-			window_center_width_explanation = list(getattr(ds, "WindowCenterWidthExplanation", None)) if isinstance(getattr(ds, "WindowCenterWidthExplanation", None), MultiValue) else list([getattr(ds, "WindowCenterWidthExplanation", None)]),
+			window_center=ImageExtractor._as_list_or_none(getattr(ds, "WindowCenter", None)),
+			window_width=ImageExtractor._as_list_or_none(getattr(ds, "WindowWidth", None)),
+			window_center_width_explanation=ImageExtractor._as_list_or_none(getattr(ds, "WindowCenterWidthExplanation", None)),
 			voi_lut_function=getattr(ds, "VOILUTFunction", None),
 		)

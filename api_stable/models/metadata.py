@@ -32,15 +32,15 @@ class BreastInfo(BaseModel):
     breast_implant_present: bool | None
 
 class ImageInfo(BaseModel):
-    rows: int
-    columns: int
-    bits_stored: int
+    rows: int | None
+    columns: int | None
+    bits_stored: int | None
     pixel_spacing: tuple[float,float] | None
     photometric_interpretation: str | None # MONOCHROME1\MONOCHROME2
     presentation_lut_shape: str | None # IDENTITY\INVERSE
-    window_center: list | None
-    window_width: list | None
-    window_center_width_explanation: list | None  # NORMAL\HARDER\SOFTER
+    window_center: float | int | list[float | int] | None
+    window_width: float | int | list[float | int] | None
+    window_center_width_explanation: str | list[str] | None  # NORMAL\HARDER\SOFTER
     voi_lut_function: str | None
 
 class MammographyMetadata(BaseModel):

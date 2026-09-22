@@ -105,8 +105,6 @@ class MammographyDicom:
         )
         
         last_windowing = self.image.last_windowing or {}
-
-        """
         self._sync_metadata_from_image(
             image_overrides={
                 "window_center": last_windowing.get("window_center", window_center),
@@ -115,7 +113,6 @@ class MammographyDicom:
                 "window_center_width_explanation": "APPLIED",
             }
         )
-        """
         return self
 
     @staticmethod
@@ -205,6 +202,14 @@ class MammographyDicom:
 
         return resolved_metadata
 
+    @staticmethod
+    def _first_window_value(value):
+        if isinstance(value, list):
+            return value[0] if value else None
+        if isinstance(value, pydicom.multival.MultiValue):
+            return value[0] if len(value) > 0 else None
+        return value
+
     def to_dicom_dataset(self, prefer_original_header=True, generate_new_uids=True):
         """Build a DICOM Dataset from the current instance image + metadata."""
         if self._image is None and self.ds is None:
@@ -261,10 +266,13 @@ class MammographyDicom:
                 ds.ImageLaterality = str(self.metadata.breast.laterality)
             if self.metadata.breast.view is not None:
                 ds.ViewPosition = str(self.metadata.breast.view)
-            if self.metadata.image.window_center is not None:
-                ds.WindowCenter = float(self.metadata.image.window_center)
-            if self.metadata.image.window_width is not None:
-                ds.WindowWidth = max(float(self.metadata.image.window_width), 1.0)
+            window_center = self._first_window_value(self.metadata.image.window_center)
+            if window_center is not None:
+                ds.WindowCenter = float(window_center)
+
+            window_width = self._first_window_value(self.metadata.image.window_width)
+            if window_width is not None:
+                ds.WindowWidth = max(float(window_width), 1.0)
             if self.metadata.image.voi_lut_function is not None:
                 ds.VOILUTFunction = str(self.metadata.image.voi_lut_function)
 

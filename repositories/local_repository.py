@@ -28,7 +28,7 @@ class LocalRepository:
             if not folder.is_dir():
                 continue
             #dicoms = list(folder.glob("*.dcm"))
-            dicoms = [x for x in folder.glob("*") if is_dicom(x)]
+            dicoms = [x for x in folder.glob("*") if x.is_file() and is_dicom(x)]
             if len(dicoms) == 0:
                 continue
             uid = folder.name

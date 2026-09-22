@@ -5,6 +5,7 @@ import pytest
 
 from api_stable.mammography import MammographyDicom
 from api_stable.study import View
+from repositories.local_repository import LocalRepository
 from services.studyService import StudyService
 
 
@@ -35,26 +36,35 @@ def test_load_complete_study(tmp_path):
     study_folder = tmp_path / "study_complete"
     _make_study_folder(study_folder, include_rmlo=True)
 
-    study = StudyService.load(study_folder)
+    repository = LocalRepository(tmp_path)
+    service = StudyService(repository)
 
-    assert StudyService.count_images(study) == 4
+    study = service.get("study_complete")
+
+    assert len(study) == 4
     assert study.is_complete is True
-    assert set(StudyService.list_views(study)) == {View.LCC, View.RCC, View.LMLO, View.RMLO}
-    assert StudyService.validate(study) is True
+    assert set(study.images.keys()) == {View.LCC, View.RCC, View.LMLO, View.RMLO}
+    assert service.validate("study_complete") is True
 
 
 def test_load_incomplete_study_detects_missing_view(tmp_path):
     study_folder = tmp_path / "study_incomplete"
     _make_study_folder(study_folder, include_rmlo=False)
 
-    study = StudyService.load(study_folder)
+    repository = LocalRepository(tmp_path)
+    service = StudyService(repository)
 
-    assert StudyService.count_images(study) == 3
+    # Repository can load incomplete studies, but the service contract validates on get().
+    study = repository.load("study_incomplete")
+
+    assert len(study) == 3
     assert study.is_complete is False
     assert View.RMLO in study.missing_views
-    assert StudyService.is_valid(study) is False
+
     with pytest.raises(ValueError):
-        StudyService.validate(study)
+        service.get("study_incomplete")
+    with pytest.raises(ValueError):
+        service.validate("study_incomplete")
 
 
 def test_load_dataset_recursively_finds_studies(tmp_path):
@@ -62,7 +72,11 @@ def test_load_dataset_recursively_finds_studies(tmp_path):
     _make_study_folder(root / "patient_1" / "study_a", include_rmlo=True)
     _make_study_folder(root / "patient_2" / "study_b", include_rmlo=False)
 
-    studies = StudyService.load_dataset(root)
+    repository = LocalRepository(root)
+    service = StudyService(repository)
 
-    assert len(studies) == 2
-    assert sorted(len(s) for s in studies) == [3, 4]
+    studies = service.load_all()
+
+    # load_all() uses service.get() and therefore filters out invalid/incomplete studies.
+    assert len(studies) == 1
+    assert len(studies[0]) == 4

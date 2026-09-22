@@ -1,0 +1,29 @@
+digraph "packages_preprocessing" {
+rankdir=BT
+charset="utf-8"
+"utils" [color="black", label=<utils>, shape="box", style="solid"];
+"utils.export_dicom_pngs" [color="black", label=<utils.export_dicom_pngs>, shape="box", style="solid"];
+"utils.extract_dicoms" [color="black", label=<utils.extract_dicoms>, shape="box", style="solid"];
+"utils.image" [color="black", label=<utils.image>, shape="box", style="solid"];
+"utils.image.apply_windowing" [color="black", label=<utils.image.apply_windowing>, shape="box", style="solid"];
+"utils.image.calculate_windowing" [color="black", label=<utils.image.calculate_windowing>, shape="box", style="solid"];
+"utils.image.csaws" [color="black", label=<utils.image.csaws>, shape="box", style="solid"];
+"utils.image.image_summary" [color="black", label=<utils.image.image_summary>, shape="box", style="solid"];
+"utils.image.preprocessing" [color="black", label=<utils.image.preprocessing>, shape="box", style="solid"];
+"utils.image.visualization" [color="black", label=<utils.image.visualization>, shape="box", style="solid"];
+"utils.metadata" [color="black", label=<utils.metadata>, shape="box", style="solid"];
+"utils.metadata.extract_metadata" [color="black", label=<utils.metadata.extract_metadata>, shape="box", style="solid"];
+"utils.utils" [color="black", label=<utils.utils>, shape="box", style="solid"];
+"utils" -> "utils" [arrowhead="open", arrowtail="none"];
+"utils" -> "utils.export_dicom_pngs" [arrowhead="open", arrowtail="none"];
+"utils" -> "utils.extract_dicoms" [arrowhead="open", arrowtail="none"];
+"utils.export_dicom_pngs" -> "utils.extract_dicoms" [arrowhead="open", arrowtail="none"];
+"utils.export_dicom_pngs" -> "utils.image.preprocessing" [arrowhead="open", arrowtail="none"];
+"utils.extract_dicoms" -> "utils.extract_dicoms" [arrowhead="open", arrowtail="none"];
+"utils.extract_dicoms" -> "utils.image.preprocessing" [arrowhead="open", arrowtail="none"];
+"utils.image" -> "utils.image.preprocessing" [arrowhead="open", arrowtail="none"];
+"utils.image" -> "utils.image.visualization" [arrowhead="open", arrowtail="none"];
+"utils.image.preprocessing" -> "utils.image.apply_windowing" [arrowhead="open", arrowtail="none"];
+"utils.metadata" -> "utils.metadata.extract_metadata" [arrowhead="open", arrowtail="none"];
+"utils.utils" -> "utils.image.visualization" [arrowhead="open", arrowtail="none"];
+}

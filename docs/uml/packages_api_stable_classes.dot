@@ -1,0 +1,13 @@
+digraph "packages_api_stable_classes" {
+rankdir=BT
+charset="utf-8"
+"api_stable.mammography" [color="black", label=<api_stable.mammography>, shape="box", style="solid"];
+"api_stable.models.image" [color="black", label=<api_stable.models.image>, shape="box", style="solid"];
+"api_stable.models.metadata" [color="black", label=<api_stable.models.metadata>, shape="box", style="solid"];
+"api_stable.models.study" [color="black", label=<api_stable.models.study>, shape="box", style="solid"];
+"api_stable.study" [color="black", label=<api_stable.study>, shape="box", style="solid"];
+"api_stable.mammography" -> "api_stable.models.image" [arrowhead="open", arrowtail="none"];
+"api_stable.mammography" -> "api_stable.models.metadata" [arrowhead="open", arrowtail="none"];
+"api_stable.study" -> "api_stable.mammography" [arrowhead="open", arrowtail="none"];
+"api_stable.study" -> "api_stable.models.metadata" [arrowhead="open", arrowtail="none"];
+}

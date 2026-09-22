@@ -1,4 +1,4 @@
-from services.metadata.metadata import Detection, DetectionResult
+from results_api.metadata.metadata import Detection, DetectionResult
 
 class YoloAdapter:
     @staticmethod

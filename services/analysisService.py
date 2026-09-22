@@ -8,7 +8,7 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 from services.adapters.yolo_adapter import YoloAdapter
 
-from services.metadata.metadata import (
+from results_api.metadata.metadata import (
     AnalysisResult,
 )   
 

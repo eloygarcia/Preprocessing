@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from services.metadata.metadata import (
+from results_api.metadata.metadata import (
     StudyResult,
     Detection,
     DetectionResult,

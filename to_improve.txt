@@ -1,0 +1,133 @@
+Duplicated or very similar functions (2026-07-03)
+===============================================
+
+1) Exact duplicates across modules
+----------------------------------
+
+1.1 Windowing implementation duplicated in two files
+- image/apply_windowing.py
+- Windowing/windowing.py
+
+Duplicated functions:
+- _apply_windowing_np_v1
+- _apply_windowing_np_v2
+- _apply_windowing_torch
+- apply_windowing
+
+Refactor suggestion:
+- Keep a single source of truth (recommended: Windowing/windowing.py)
+- In image/apply_windowing.py re-export or import wrappers from the canonical module
+
+
+1.2 Windowing parameter calculation duplicated in two files
+- image/calculate_windowing.py
+- Windowing/calculate_windowing.py
+
+Duplicated/near-duplicated functions:
+- _first_numeric
+- get_dicom_voi_lut_params
+- should_invert_monochrome1
+- normalize_photometric
+- get_windowing_for_preprocessing
+- get_windowing_for_dicom_path
+- calculate_windowing
+- calculate_all_methods
+- analyze_dataset_windowing
+- compare_methods_on_dataset
+- print_windowing_report
+- save_windowing_report
+- get_mammography_preset
+
+Note:
+- Most functions are equivalent; some differ in fallback behavior and defaults in get_dicom_voi_lut_params.
+
+Refactor suggestion:
+- Consolidate in one module and keep behavior differences behind explicit flags.
+
+
+2) High similarity (not exact duplicates)
+-----------------------------------------
+
+2.1 Worker parsing/resolution repeated in two CLI scripts
+- io/extract_dicoms.py: _parse_workers, _resolve_workers
+- io/export_dicom_pngs.py: _parse_workers, _resolve_workers
+
+Refactor suggestion:
+- Move to a shared helper module (for example io/cli_utils.py).
+
+
+2.2 Normalization helper duplicated in image package
+- image/preprocessing.py: _normalize_to_unit_interval
+- image/visualization.py: _normalize_to_unit_interval
+
+Refactor suggestion:
+- Keep one helper in a shared utility module and import it from both places.
+
+
+2.3 Image loading routines with very similar responsibility
+- image/preprocessing.py: load_dicom_pixels
+- image/visualization.py: load_dicom_image
+
+Similarity:
+- Both load DICOM and handle MONOCHROME1 inversion.
+- They differ mainly in output normalization policy and intended context.
+
+Refactor suggestion:
+- Introduce a shared loader with explicit options:
+  normalize=False/True, for_visualization=False/True.
+
+
+2.4 Raster/CSAWS summary functions are structurally similar
+- image/image_summary.py: collect_raster_image_summary_record
+- image/csaws.py: collect_csaws_image_summary_record
+- image/image_summary.py: load_raster_image
+- image/csaws.py: load_csaws_image
+
+Refactor suggestion:
+- Reuse generic raster summary/image loader for CSAWS and add CSAWS-specific columns in a thin wrapper.
+
+
+3) Additional quality issue detected
+------------------------------------
+
+3.1 In io/__init__.py there is an import likely pointing to a non-existing symbol:
+- from .extract_dicoms import extract_dataset_dicoms
+
+The available function in io/extract_dicoms.py appears to be:
+- export_dataset_dicom_tags
+
+Refactor suggestion:
+- Fix io/__init__.py exports to avoid ImportError and expose consistent public API.
+
+
+Suggested consolidation order
+-----------------------------
+1) Consolidate windowing modules first (highest duplication).
+2) Extract shared CLI worker parsing helpers.
+3) Unify normalization and DICOM loading helpers.
+4) Merge raster/CSAWS summary boilerplate.
+5) Fix io package exports.
+
+
+4) Documentation and architecture tracking (2026-08-27)
+--------------------------------------------------------
+
+4.1 Documentation hygiene
+- Keep this file (`to_improve.txt`) as technical backlog only.
+- Keep usage and decisions in README files, not mixed with refactor tasks.
+- Ensure each affected module README has: purpose, entry points, dependencies, usage sample, limitations.
+
+4.2 UML class/package diagrams
+- Tool selected: pyreverse.
+- Generated artifacts stored in `docs/uml/`:
+  - classes_api_stable_classes.dot
+  - packages_api_stable_classes.dot
+  - classes_plugin_explainability.dot
+  - classes_preprocessing.dot (currently minimal)
+  - packages_preprocessing.dot
+
+4.3 Pending documentation tasks
+- Align root `README.md` project tree with current folder layout (some sections still describe legacy paths).
+- Add short architecture README for `services/` (service responsibilities + adapters).
+- Add plugin index in `plugin_framework/README.md` with status per plugin.
+- Decide whether to keep `classes_preprocessing.dot` (empty) or regenerate with a narrower scope.

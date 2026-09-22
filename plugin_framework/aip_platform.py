@@ -5,8 +5,6 @@ from encoder_service import MammographyEncoder
 
 from api_stable.mammography import MammographyDicom
 
-
-
 class AIPlatform:
     def __init__(self):
 
@@ -23,6 +21,7 @@ class AIPlatform:
         image: MammographyDicom
     ):
         self.results['algorithm'] = algorithm
+        print(self.results['algorithm'])
         self.results['version'] = self.manager.get_algorithm(algorithm).get_metadata()['version']
         self.results['task'] = self.manager.get_algorithm(algorithm).get_metadata()['info']['task']
         
@@ -30,4 +29,4 @@ class AIPlatform:
             algorithm,
             image).json()
 
-        return self.results
+        return self.results.copy()

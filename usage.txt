@@ -12,6 +12,7 @@ Tres comandos para tener todo funcionando:
 
 Después abre:  http://127.0.0.1:8888  (el token lo ves en la sección 4)
 
+Ahora hace run.sh para componer y lanzarlo todo
 
 ============================================================
 1. REQUISITOS PREVIOS

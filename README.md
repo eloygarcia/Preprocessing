@@ -333,6 +333,23 @@ Wrappers actuales:
 - Deteccion YOLOX para uso en notebook: `common_tasks/wrappers/yolox_interface.py`
 - Segmentacion MAseg: `common_tasks/wrappers/segmentation/maseg_wrapper.py`
 
+## Plugin framework: indice y estado
+
+- Indice centralizado de plugins y estado actual: `plugin_framework/README.md`.
+- Objetivo: visualizar rapidamente que plugins estan activos, cuales siguen experimentales y sus puntos de entrada.
+
+Resumen rapido:
+
+- `ExplainabilityPlugin`: Activo (WIP).
+- `ImageClassificationPlugin`: Activo (WIP).
+- `GMICplugin`: Experimental.
+- `UnetSegmentationPlugin`: Experimental.
+
+## Arquitectura de servicios
+
+- Descripcion corta de responsabilidades y flujo: `services/README.md`.
+- Incluye relacion entre servicios de aplicacion, adapters y capa `api_stable`.
+
 ## Notas de rutas
 
 - En este repositorio la raiz de codigo Python vive en `image/`, `metadata/`, `utils/` y `common_tasks/`, no en un paquete `src/`.
@@ -340,6 +357,44 @@ Wrappers actuales:
 - Dar a cada servicio su stage/imagen en `docker/Dockerfile.services`.
 - Montar codigo y pesos como volumenes (`/workspace`) para iterar rapido.
 - Reconstruir solo el servicio afectado cuando cambian dependencias.
+
+## Mantenimiento de documentacion
+
+- Guia de mantenimiento: `docs/README.md`.
+- Backlog tecnico activo: `to_improve.txt`.
+- Regla practica: cada cambio de codigo relevante debe ir acompanado de actualizacion de README (modulo afectado) y, si aplica, UML.
+
+## UML de clases y modulos
+
+Herramienta recomendada en este repo: `pyreverse` (Pylint).
+
+Comandos base:
+
+```bash
+# api_stable
+PYTHONPATH=. pyreverse -o dot -p api_stable_classes \
+  api_stable.mammography api_stable.study \
+  api_stable.models.image api_stable.models.study \
+  api_stable.models.metadata api_stable.models
+
+# Explainability plugin
+PYTHONPATH=. pyreverse -o dot -p plugin_explainability \
+  plugin_framework/plugins/ExplainabilityPlugin/original_src/xai_explainability.py
+```
+
+Artefactos actuales generados:
+
+- `docs/uml/classes_api_stable_classes.dot`
+- `docs/uml/packages_api_stable_classes.dot`
+- `docs/uml/classes_plugin_explainability.dot`
+
+Opcional (si tienes Graphviz): renderiza SVG con `dot -Tsvg ...`.
+
+Exportacion automatizada a SVG:
+
+```bash
+bash docs/uml/export_svg.sh
+```
 
 
 ## TODO

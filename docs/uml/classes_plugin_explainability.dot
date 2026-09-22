@@ -1,0 +1,5 @@
+digraph "classes_plugin_explainability" {
+rankdir=BT
+charset="utf-8"
+"xai_explainability.ExplainabilityEngine" [color="black", fontcolor="black", label=<{ExplainabilityEngine|device<br ALIGN="LEFT"/>model<br ALIGN="LEFT"/>model_name : str<br ALIGN="LEFT"/>|gradcam_attribution(input_tensor, target_layer, target_class)<br ALIGN="LEFT"/>integrated_gradients_attribution(input_tensor, target_class, n_steps)<br ALIGN="LEFT"/>saliency_attribution(input_tensor, target_class)<br ALIGN="LEFT"/>shap_attribution(input_tensor, background_size)<br ALIGN="LEFT"/>show_attribution_map(image_np, attribution_map, title, save_path, figsize)<br ALIGN="LEFT"/>show_multiple_attributions(image_np, attributions_dict, title, save_path, figsize)<br ALIGN="LEFT"/>}>, shape="record", style="solid"];
+}
